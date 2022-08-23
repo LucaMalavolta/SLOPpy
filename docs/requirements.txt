@@ -1,0 +1,16 @@
+###### Requirements with Version Specifiers ######
+numpy >=1.18, <1.23
+numba >=0.55
+scipy >=1.8.1
+matplotlib >=3.5.2
+emcee >=3.1.2
+astropy >= 5.0
+###### Requirements without Version Specifiers ######
+oyaml
+argparse
+sphinx-book-theme
+myst-parser
+myst-nb
+h5py
+tqdm
+pygtc
