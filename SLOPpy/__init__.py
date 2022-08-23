@@ -42,4 +42,4 @@ from SLOPpy.clv_rm_models_lines import *
 from SLOPpy.transmission_mcmc import *
 from SLOPpy.transmission_binned_mcmc import *
 
-__version__ = "1.0"
+__version__ = "1.0.0"

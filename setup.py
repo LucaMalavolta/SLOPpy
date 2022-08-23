@@ -10,8 +10,8 @@ this_directory = Path(__file__).parent
 long_description = (this_directory / "README.md").read_text()
 
 setup(
-    name="sloppy-package",
-    version='1.00',
+    name="SLOPpy-package",
+    version='1.0.0',
     author="Daniela Sicilia, Luca Malavolta, et al.",
 	author_email = 'daniela.sicilia@inaf.it, luca.malavolta@unipd.it',
 	url = 'https://github.com/LucaMalavolta/SLOPpy',
