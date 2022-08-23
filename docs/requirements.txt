@@ -2,8 +2,8 @@ numpy
 scipy
 matplotlib
 emcee
-astrop
-astroquer
+astropy
+astroquery
 oyaml
 argparse
 h5py
