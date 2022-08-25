@@ -31,7 +31,7 @@ LINUX, macOS: conda activate sloppy
 You can then install `SLOPpy` by using `pip` inside the code repository:
 
 ```{code} bash
- pip install sloppy-package
+ pip install SLOPpy-package
 ```
 
 Note that the name is  `sloppy-package` and not  `sloppy`, as the former was already taken by another package in PyPI. The name for package importation will still be `SLOPpy`:
@@ -50,7 +50,7 @@ Download the latest version from the GitHub repository:
 
 You can then install `SLOPpy` by using `pip` inside the code repository:
 
-```{code} bash 
+```{code} bash
  cd SLOPpy
  pip install .
 ```
@@ -66,7 +66,7 @@ Alternatively, you can install `SLOPpy` using the `setup.py` file:
 
 ```{admonition} Give people credit for their work
 
-If you are using any of those packages listed above, *please be sure to cite the proper references*, as stated in the relative web page. 
+If you are using any of those packages listed above, *please be sure to cite the proper references*, as stated in the relative web page.
 ```
 
 These packages are installed automatically when using pip.
@@ -77,9 +77,9 @@ These packages are installed automatically when using pip.
 - `oyaml`: a full-featured YAML framework for the Python programming language.  YAML is the language used for the configuration file ([oyaml home page], [yaml home page])
 - `pygtc`: Make a publication-ready giant-triangle-confusogram (GTC) ([pygtc home page])
 - `pyDE`: global optimization package ([PyDE home page])
-- `emcee`: ensemble sampling toolkit for affine-invariant MCMC ([emcee home page]). 
+- `emcee`: ensemble sampling toolkit for affine-invariant MCMC ([emcee home page]).
 
-`emcee` is already included in the requirements, `pyDE` needs to be installed separately as the GitHub version supports multiprocessing: 
+`emcee` is already included in the requirements, `pyDE` needs to be installed separately as the GitHub version supports multiprocessing:
 
 ```{code} bash
  pip install git+https://github.com/hpparvi/PyDE.git
