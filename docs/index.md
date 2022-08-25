@@ -1,5 +1,5 @@
 # SLOPpy
-## Stellar Lines Of Planets with Python
+## Spectral Lines Of Planets with python
 <!---
 ## the ultimate tool for exoplanet characterization
 --->
