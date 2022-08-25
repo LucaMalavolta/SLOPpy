@@ -1,4 +1,4 @@
-### Stellar Lines Of Planets with Python
+### Spectral Lines Of Planets with python
 ***
 ### `SLOPpy` version 1.0 - August 2022
 
