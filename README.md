@@ -3,16 +3,16 @@
 ### `SLOPpy` version 1.0 - August 2022
 
 **Main contributors**
-Daniela Sicilia
-Luca Malavolta
-Lorenzo Pino
-Gaetano Scandariato
-Valerio Nascimbeni
-Giampaolo Piotto
+Daniela Sicilia,
+Luca Malavolta,
+Lorenzo Pino,
+Gaetano Scandariato,
+Valerio Nascimbeni,
+Giampaolo Piotto,
 Isabella Pagano
 
 **News**
-Paper accepted, first public commit, link coming soon
+Paper accepted, repository now publicly available, documentation and examples coming online in a few days.
 
 Basic [documentation available here](https://sloppy.readthedocs.io/en/latest/), updates will follow in the upcoming weeks.
 
