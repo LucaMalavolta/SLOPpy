@@ -1,0 +1,155 @@
+Name: WASP-76
+pipeline:
+  - sky_correction
+  - differential_refraction
+  - telluric_molecfit_preparation
+  - telluric_molecfit_coadd
+  - differential_refraction_update
+  - master_out
+  - clv_rm_models_lines
+  - transmission_spectrum_preparation
+  - transmission_binned_mcmc
+  - transmission_spectrum
+  - transmission_spectrum_average
+  - transmission_spectrum_stellarRF
+  - transmission_spectrum_average_stellarRF
+  - transmission_lightcurve
+  - transmission_lightcurve_average
+  - spectra_lightcurve
+  - spectra_lightcurve_average
+plots:
+  #- sky_correction
+  # - differential_refraction
+  - transmission_binned_mcmc
+  #- telluric_template
+  #- differential_refraction_update
+  #- check_differential_refraction
+  #- master_out
+  #- compare_master_out
+  #- transmission_spectrum_planetRF
+  #- second_telluric_correction_on_transmission
+  #- transmission_average_planetRF
+  #- spectra_lightcurve
+  # spectra_lightcurve_average
+  #- transmission_lightcurve
+  #- transmission_lightcurve_average
+  #- transmission_map_average
+nights:
+  '2012-11-11':
+    all: 2012-11-11_all.list
+    in_transit: 2012-11-11_transit_in.list
+    out_transit: 2012-11-11_transit_out.list
+    telluric_list: 2012-11-11_transit_out.list
+    full_transit: 2012-11-11_transit_full.list
+    instrument: HARPS
+    mask: G2
+    time_of_transit: 2456243.5959552997
+    spline_residuals: False
+  '2017-10-24':
+    all: 2017-10-24_all.list
+    in_transit: 2017-10-24_transit_in.list
+    out_transit: 2017-10-24_transit_out.list
+    telluric_list: 2017-10-24_transit_out.list
+    full_transit: 2017-10-24_transit_full.list
+    instrument: HARPS
+    mask: G2
+    time_of_transit: 2458051.6680533197
+    spline_residuals: False
+  '2017-11-22':
+    all: 2017-11-22_all.list
+    in_transit: 2017-11-22_transit_in.list
+    out_transit: 2017-11-22_transit_out.list
+    telluric_list: 2017-11-22_transit_out.list
+    full_transit: 2017-11-22_transit_full.list
+    instrument: HARPS
+    mask: G2
+    time_of_transit: 2458080.626165
+    spline_residuals: False
+master-out:
+  wavelength_range: [5880.000, 5906.000]
+  wavelength_step: 0.01000000
+  binning_factor: 20
+  use_smoothed: False
+  use_composite: False
+  boxcar_smoothing: 3
+instruments:
+  HARPS:
+    data_archive: ../archive/
+    mask: G2
+    orders: red_ccd
+    wavelength_rescaling: [5869.0, 5877.0]
+    refraction:
+      approach: individual_order
+      method: polynomial
+      fit_order: 3
+      fit_iters: 3
+      fit_sigma: 5
+      #knots_spacing: 100.
+    telluric_template:
+      file: ./additional_filesLaSilla_skycal_sample.dat
+      fit_range: [5885.4, 5888.0]
+    resolution: 115000
+spectral_lines:
+  Na_doublet:
+    range: [5870.0, 5915.0]
+    clv_rm_correction: True
+    passbands: # width of EACH passband around each spectral line
+      c075: 0.750
+      c150: 1.500
+      c300: 3.000
+      #c600: 6.000
+    lines:
+      D1: 5895.924
+      D2: 5889.951
+    continuum:
+      B: [5874.89, 5886.89]
+      R: [5898.89, 5910.89]
+    normalization:
+      model_poly_degree: 1
+      spectra_poly_degree: 1
+      lower_threshold: 0.95
+    fit_parameters:
+      range: [5886.0, 5900.0] # must be as small as possible to speed up computation
+      bin_step: 0.025
+      free_Rp: True
+      free_winds: True
+      shared_winds: True
+      shared_fwhm: False
+      priors:
+        planet_R: [1.00, 0.05]
+    sampler_parameters:
+      n_steps: 50000
+      n_burnin: 25000
+      n_walkers: 25
+CLV_RM_correction:
+  synthesis_files: ./additional_files/WASP76_5840_5920_NLTE # pth+root name of the synthesis file
+  n_gridpoints: 101 # number of cell per side to sample the stellar surface, must be odd
+  time_step: 300. # oversampling step for the computation of the CLV+RM correction [s]
+  rebinning_step: 0.025 # used when rebinning the synthesis of the surface element
+  continuum_range: [5874.5, 5875.5] # continuum region - must be without lines, it can be small
+  radius_factor: [0.5, 2.5, 0.1]  #range between 0.5 and 2.5 (step 0.1)
+molecfit:
+  installation_path: /Applications/molecfit/bin/
+  include_telluric: ./additional_files/include_regions_ORF.dat
+  include_stellar: ./additional_files/include_regions_ORF.dat
+  exptime_coadd: 2600
+  rebinning_step: 0.010
+planet:
+    orbit: circular
+    period: [1.80988198,0.00000064]
+    RV_semiamplitude: [196.52, 0.94]
+    total_transit_duration: [0.15972, 0.0000]
+    full_transit_duration: [0.12694, 0.0000]
+    inclination: [89.623,0.034] #orbital inclination of the planet [deg]
+    reference_time_of_transit : [2458080.626165,0.000418]
+    radius_ratio: [0.1083259681,0.0] # radius ratio, in stellar units [R_star]
+    semimajor_axis_ratio: [4.08,0.06] # semimajor axis ratio, in stellar units [R_star]
+    impact_parameter: [0.027, 0.023] # transit impact parameter []
+star:
+   mass: [1.458,0.021]
+   radius: [1.756,0.071]
+   alpha: [0, 0.]  # differential rotation rate []
+   lambda: [61.28, 7.61] # projected obliquity [deg]
+   vsini: [1.48, 0.28] # projected rotational velocity [km/s]
+   inclination: [0, 0] # stellar inclination [0-180 deg]
+   RV_semiamplitude : [0.11602, 0.00135] # RV semiamplitude [m/s]

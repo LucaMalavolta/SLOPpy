@@ -1,0 +1,207 @@
+Name: KELT-20
+pipeline:
+  #- sky_correction
+  - differential_refraction
+  - telluric_molecfit_v1_preparation
+  - telluric_molecfit_v1_coadd
+  - differential_refraction_update
+  - master_out
+  - clv_rm_models_lines
+  - transmission_spectrum_preparation
+  - transmission_binned_mcmc
+  - transmission_spectrum
+  - transmission_spectrum_average
+  - transmission_spectrum_stellarRF
+  - transmission_spectrum_average_stellarRF
+  - transmission_lightcurve
+  - transmission_lightcurve_average
+plots:
+  #- sky_correction
+  #- differential_refraction
+  #- telluric_molecfit_coadd
+  #- master_out
+  #- clv_rm_models
+  #- transmission_binned_mcmc
+  #- transmission_spectrum_preparation
+  #- transmission_spectrum
+  #- transmission_spectrum_average
+  #- clv_rm_modelling
+  #- transmission_spectrum_observerRF
+  #- transmission_spectrum_planetRF
+  #- transmission_average_planetRF
+  #- transmission_lightcurve
+  #- transmission_lightcurve_average
+#interactive_plots: False
+nights:
+  '2017-08-16':
+    all: 2017-08-16_all.list
+    in_transit: 2017-08-16_transit_in.list
+    out_transit: 2017-08-16_transit_out.list
+    full_transit: 2017-08-16_transit_full.list
+    telluric_list: 2017-08-16_transit_out.list
+    instrument: HARPS-N
+    mask: G2
+    time_of_transit: 2457982.5461904802
+    spline_residuals: True
+  '2018-07-12':
+    all: 2018-07-12_all.list
+    in_transit: 2018-07-12_transit_in.list
+    out_transit: 2018-07-12_transit_out.list
+    full_transit: 2018-07-12_transit_full.list
+    telluric_list: 2018-07-12_transit_out.list
+    instrument: HARPS-N
+    mask: G2
+    time_of_transit: 2458312.58587668
+    spline_residuals: True
+  '2018-07-19':
+    all: 2018-07-19_all.list
+    in_transit: 2018-07-19_transit_in.list
+    out_transit: 2018-07-19_transit_out.list
+    full_transit: 2018-07-19_transit_full.list
+    telluric_list: 2018-07-19_transit_out.list
+    instrument: HARPS-N
+    mask: G2
+    time_of_transit: 2458319.5340806
+    spline_residuals: True
+master-out:
+  wavelength_range: [5880.000, 5911.000]  #Na
+  wavelength_step: 0.010000000
+  binning_factor: 20
+  use_smoothed: False
+  use_composite: False
+  boxcar_smoothing: 3
+instruments:
+  HARPS-N:
+    data_archive: ../archive/
+    mask: G2
+    orders: red_ccd
+    wavelength_rescaling: [5869.0, 5877.0]   #Na
+    telluric_template:
+      file: LaSilla_skycal_sample.dat
+      fit_range: [5885.4, 5888.0]
+    resolution: 115000
+    use_analytical_rvs: True
+    refraction:
+      method: spline
+      #method: polynomial
+      knots_spacing: 10
+      fit_order: 5 #3
+      fit_iters: 1 #3
+      fit_sigma: 5
+spectral_lines:
+  D1_line:
+    range: [5870.0, 5915.0]
+    clv_rm_correction: True
+    passbands: # width of EACH passband around each spectral line
+      c075: 0.750
+      c150: 1.500
+      c300: 2.980
+    lines:
+      D1: 5895.924
+    continuum:
+      B: [5872.89, 5884.89]
+      R: [5900.89, 5912.89]
+    #rectification: polynomial_fit # here or in spectra
+    normalization:
+      model_poly_degree: 1
+      spectra_poly_degree: 1
+      lower_threshold: 0.95
+    fit_parameters:
+      range: [5892.0, 5900.0] # must be as small as possible to speed up computation
+      bin_step: 0.025
+      free_Rp: True
+      free_winds: True
+      shared_winds: False
+      shared_fwhm: False
+    sampler_parameters:
+      n_steps: 50000
+      n_burnin: 25000
+      n_walkers: 25
+  D2_line:
+    range: [5870.0, 5915.0]
+    clv_rm_correction: True
+    passbands: # width of EACH passband around each spectral line
+      c075: 0.750
+      c150: 1.500
+      c300: 2.980
+    lines:
+      D2: 5889.951
+    continuum:
+      B: [5872.89, 5884.89]
+      R: [5900.89, 5912.89]
+    #rectification: polynomial_fit # here or in spectra
+    normalization:
+      model_poly_degree: 1
+      spectra_poly_degree: 1
+      lower_threshold: 0.95
+    fit_parameters:
+      range: [5886.0, 5894.0] # must be as small as possible to speed up computation
+      bin_step: 0.025
+      free_Rp: True
+      free_winds: True
+      shared_winds: False
+      shared_fwhm: False
+    sampler_parameters:
+      n_steps: 50000
+      n_burnin: 25000
+      n_walkers: 25
+  H_alpha:
+    range: [6462, 6662]
+    clv_rm_correction: True
+    passbands: # width of EACH passband around each spectral line
+      c075: 0.750
+      c150: 1.500
+      c300: 2.980
+    lines:
+      Ha: 6562.81
+    continuum:
+      B: [6558.0, 6561.0]
+      R: [6564.0, 6567.0]
+    normalization:
+      model_poly_degree: 1
+      spectra_poly_degree: 1
+      lower_threshold: 0.95
+    fit_parameters:
+      range: [6561.0, 6564.0] # must be as small as possible to speed up computation
+      bin_step: 0.0250
+      free_Rp: True
+      free_winds: True
+      shared_winds: False
+      shared_fwhm: False  # use the same FWHM for all the lines
+    sampler_parameters:
+      n_steps: 50000
+      n_burnin: 25000
+      n_walkers: 25
+CLV_RM_correction:
+  synthesis_files: ./additional_files/Kelt20_5600_6800_kurucz_LTE # pth+root name of the synthesis file
+  n_gridpoints: 101 # number of cell per side to sample the stellar surface, must be odd
+  time_step: 300. # oversampling step for the computation of the CLV+RM correction [s]
+  rebinning_step: 0.025 # used when rebinning the synthesis of the surface element
+  continuum_range: [5874.5, 5875.5] # continuum region - must be without lines, it can be small
+  radius_factor: [0.5, 2.5, 0.1]
+molecfit:
+  installation_path: /Applications/molecfit/bin/
+  include_telluric: ./additional_files/include_regions_ORF.dat
+  include_stellar: ./additional_files/include_regions_SRF.dat
+  exptime_coadd: 2600
+  rebinning_step: 0.0100
+planet:
+  orbit: circular
+  period: [3.47410196,0.00000106]
+  RV_semiamplitude: [173.091, 1.]
+  total_transit_duration: [0.14882,0.00092]     #T14
+  full_transit_duration: [0.10912,0.00256]   #T23
+  inclination: [85.61,0.19]
+  reference_time_of_transit : [2457503.120120,0.00018]
+  radius_ratio: [0.1173,0.0063]
+  semimajor_axis_ratio: [7.28620418,0.39287812]
+  impact_parameter: [0.503,0.028]
+star:
+  mass: [1.89,0.06]
+  radius: [1.60,0.06]
+  alpha: [0, 0.0]  # differential rotation rate []
+  lambda: [0.6,4] # projected obliquity [deg]
+  vsini: [114,3] # projected rotational velocity [km/s]
+  inclination: [0, 0] # stellar inclination [0-180 deg]
+  RV_semiamplitude : [0,0] #fast rotator star
+  RV_gamma: [-21.07,0.03] #km/s
