@@ -22,6 +22,8 @@ Documentation is still work in progress!
 ```{toctree}
 :maxdepth: 2
 installation
+configuration_file
+reduction_steps
 GitHub Repository <https://github.com/LucaMalavolta/SLOPpy>
 ```
 

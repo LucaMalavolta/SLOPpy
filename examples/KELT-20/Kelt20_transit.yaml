@@ -16,22 +16,22 @@ pipeline:
   - transmission_lightcurve
   - transmission_lightcurve_average
 plots:
-  #- sky_correction
-  #- differential_refraction
-  #- telluric_molecfit_coadd
-  #- master_out
-  #- clv_rm_models
-  #- transmission_binned_mcmc
-  #- transmission_spectrum_preparation
-  #- transmission_spectrum
-  #- transmission_spectrum_average
+  - sky_correction
+  - differential_refraction
+  - telluric_molecfit_coadd
+  - master_out
+  - clv_rm_models
+  - transmission_binned_mcmc
+  - transmission_spectrum_preparation
+  - transmission_spectrum
+  - transmission_spectrum_average
   #- clv_rm_modelling
-  #- transmission_spectrum_observerRF
-  #- transmission_spectrum_planetRF
-  #- transmission_average_planetRF
-  #- transmission_lightcurve
-  #- transmission_lightcurve_average
-#interactive_plots: False
+  - transmission_spectrum_observerRF
+  - transmission_spectrum_planetRF
+  - transmission_average_planetRF
+  - transmission_lightcurve
+  - transmission_lightcurve_average
+interactive_plots: False
 nights:
   '2017-08-16':
     all: 2017-08-16_all.list
