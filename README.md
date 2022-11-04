@@ -16,4 +16,4 @@ Paper accepted, repository now publicly available, documentation and examples co
 
 Basic [documentation available here](https://sloppy.readthedocs.io/en/latest/), updates will follow in the upcoming weeks.
 
-Most of the information can be found in [Sicilia et al. (2022)](https://doi.org/10.1051/0004-6361/202244055) ([arXiv link](https://arxiv.org/abs/2208.13045))
+Most of the information can be found in Sicilia et al. (2022) [A&A link](https://doi.org/10.1051/0004-6361/202244055) [ADS link](https://ui.adsabs.harvard.edu/abs/2022arXiv220813045S/abstract) [arXiv link](https://arxiv.org/abs/2208.13045) 
