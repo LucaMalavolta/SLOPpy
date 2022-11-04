@@ -40,6 +40,9 @@ def sloppy_run():
 
     #pipeline_common_routines['PCA_test01'] = SLOPpy.PCA_test01
 
+    pipeline_common_routines['pca_preparation'] = SLOPpy.compute_pca_preparation
+
+
     # molecfit version 1.5
     pipeline_common_routines['telluric_molecfit_v1_preparation'] = SLOPpy.compute_telluric_molecfit_v1_preparation
     pipeline_common_routines['telluric_molecfit_v1'] = SLOPpy.compute_telluric_molecfit_v1
