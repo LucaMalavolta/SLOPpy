@@ -432,7 +432,7 @@ def plot_telluric_molecfit_coadd(config_in, night_input=''):
         #plt.plot(rescaling_array, 2*rescaling_array*coeff[0] + coeff[1] )
         #plt.plot()
 
-        print("plot_telluric_template                     Night: ", night)
+        print("plot_telluric_molecfit_coadd                  Night: ", night)
 
         """ Retrieving the list of observations"""
         lists = load_from_cpickle('lists', config_in['output'], night)
