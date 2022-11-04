@@ -567,7 +567,7 @@ def plot_differential_refraction(config_in, night_input='', append_name=None):
         fig.subplots_adjust(wspace=0.05, hspace=0.4)
         plt.show()
 
-        """ 
+        """
         PLOT: residuals of the fit
         """
 
@@ -622,7 +622,7 @@ def plot_differential_refraction(config_in, night_input='', append_name=None):
 
         continue
 
-        """ 
+        """
         PLOT: corrected e2ds
         """
 
