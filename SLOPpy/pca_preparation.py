@@ -21,8 +21,8 @@ def compute_pca_preparation(config_in, append_name=None):
 
     preparation_dict = {
         'fit_iters': 5,
-        'fit_order': 5,
-        'fit_sigma': 4
+        'fit_order': 7,
+        'fit_sigma': 2
     }
 
 
@@ -71,19 +71,16 @@ def compute_pca_preparation(config_in, append_name=None):
             stack_bjd[i_obs] = input_data[obs]['BJD']
             stack_airmass[i_obs] = input_data[obs]['AIRMASS']
 
-            median = np.nanmedian(stack_e2ds[i_obs, :, :], axis=0)
-            stack_e2ds[i_obs, :, :] /= median
-            stack_e2ds_err[i_obs, :, :] /= median
+            median = np.nanmedian(stack_e2ds[i_obs, :, :], axis=1)
 
-            print(i_obs, obs)
-            plt.scatter(stack_wave[i_obs, 22, :], stack_e2ds[i_obs, 22, :], s=2)
-            plt.scatter(stack_wave[i_obs, 22, :], stack_e2ds_err[i_obs, 22, :], s=2)
+            print(np.shape(median))
+            for i_orders in range(0, n_orders):
+                stack_e2ds[i_obs, i_orders, :] /= median[i_orders]
+                stack_e2ds_err[i_obs, i_orders, :] /= median[i_orders]
 
-            plt.show()
-
-        poly_flag = (stack_e2ds > 0.01)
-        poly_flag[:, :, :50]= False
-        poly_flag[:, :, :50]= False
+        poly_flag = (stack_e2ds > 0.001)
+        #poly_flag[:, :, :20]= False
+        #poly_flag[:, :, 20:]= False
 
         stack_polyfit = np.zeros_like(stack_e2ds)
 
@@ -109,10 +106,6 @@ def compute_pca_preparation(config_in, append_name=None):
                     std = np.std(residuals[order_flag])
                     order_flag = (order_flag) & (residuals > -preparation_dict['fit_sigma'] * std)
 
-            if i_orders==22:
-                plt.scatter(stack_wave[:, i_orders,:], stack_e2ds[:, i_orders, :]-0.5, s=2)
-                plt.scatter(stack_wave[:, i_orders,:], stack_e2ds[:, i_orders, :]/fit_shaped, s=2)
-
             stack_e2ds[:, i_orders, :]/=fit_shaped
             stack_e2ds_err[:, i_orders, :]/=fit_shaped
             stack_polyfit[:, i_orders, :] =fit_shaped
@@ -131,6 +124,6 @@ def compute_pca_preparation(config_in, append_name=None):
             'fit_pams': preparation_dict
         }
 
-        plt.show()
+
 
         quit()
