@@ -21,8 +21,8 @@ def compute_pca_preparation(config_in, append_name=None):
 
     preparation_dict = {
         'fit_iters': 5,
-        'fit_order': 7,
-        'fit_sigma': 2
+        'fit_order': 3,
+        'fit_sigma': 3
     }
 
 
@@ -42,7 +42,7 @@ def compute_pca_preparation(config_in, append_name=None):
         """ Retrieving input and calibration data """
         calib_data = load_from_cpickle('calibration_fibA', config_in['output'], night)
         input_data = retrieve_observations(config_in['output'], night, lists['observations'],
-                                           use_refraction=False, use_telluric=False, use_interstellar=False,
+                                           use_refraction=True, use_telluric=False, use_interstellar=False,
                           use_telluric_spline= False)
         observational_pams = load_from_cpickle('observational_pams', config_in['output'], night)
 
@@ -59,21 +59,19 @@ def compute_pca_preparation(config_in, append_name=None):
         stack_bjd = np.zeros(n_obs, dtype=np.double)
         stack_airmass = np.zeros(n_obs, dtype=np.double)
 
-        import matplotlib.pyplot as pl
-
-
         for i_obs, obs in enumerate(lists['observations']):
 
+            blaze_wave_refactoring = 1. / calib_data['blaze'] / (input_data[obs]['step']/np.median(input_data[obs]['step']))
+
             stack_wave[i_obs, :, :] = input_data[obs]['wave']
-            stack_e2ds[i_obs, :, :] = input_data[obs]['e2ds']
-            stack_e2ds_err[i_obs, :, :] = input_data[obs]['e2ds_err']
+            stack_e2ds[i_obs, :, :] = input_data[obs]['e2ds'] * blaze_wave_refactoring
+            stack_e2ds_err[i_obs, :, :] = input_data[obs]['e2ds_err'] * blaze_wave_refactoring
 
             stack_bjd[i_obs] = input_data[obs]['BJD']
             stack_airmass[i_obs] = input_data[obs]['AIRMASS']
 
             median = np.nanmedian(stack_e2ds[i_obs, :, :], axis=1)
 
-            print(np.shape(median))
             for i_orders in range(0, n_orders):
                 stack_e2ds[i_obs, i_orders, :] /= median[i_orders]
                 stack_e2ds_err[i_obs, i_orders, :] /= median[i_orders]
@@ -110,7 +108,13 @@ def compute_pca_preparation(config_in, append_name=None):
             stack_e2ds_err[:, i_orders, :]/=fit_shaped
             stack_polyfit[:, i_orders, :] =fit_shaped
 
+
+            #plt.imshow(stack_e2ds[:, i_orders, :], interpolation='none', aspect='auto', vmin=0.25, vmax=1.5)
+            #plt.colorbar()
+            #plt.show()
+
         preparation = {
+            'stack_wave': stack_wave,
             'stack_e2ds': stack_e2ds,
             'stack_e2ds_err': stack_e2ds_err,
             'stack_bjd': stack_e2ds,
@@ -123,7 +127,6 @@ def compute_pca_preparation(config_in, append_name=None):
                 },
             'fit_pams': preparation_dict
         }
+        save_to_cpickle(filename, preparation, config_in['output'], night)
 
 
-
-        quit()
