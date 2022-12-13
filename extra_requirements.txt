@@ -8,9 +8,9 @@ astropy >=5.1
 astroquery >=0.4
 oyaml >= 1.0
 ###### Requirements without Version Specifiers ######
+scikit-learn
 argparse
 h5py
 tqdm
 pygtc
 PyDE @ git+https://github.com/hpparvi/PyDE.git
-
