@@ -1124,7 +1124,10 @@ def write_molecfit_par(filename_par, wave_include, molecfit_dict, observing_dict
     # --LNFL_LINE_DB
     # File name of the line list (must be stored in the directory :
     # ({TELLURICCORR_DATA_PATH}/hitran/).
-    fileout.write('LNFL_LINE_DB=aer_v_3.6\n')
+    if molecfit_dict.get('aer_version', False):
+        fileout.write('LNFL_LINE_DB=aer_v_{0:2.1f}\n'.format(molecfit_dict['aer_version']))
+    else:
+        fileout.write('LNFL_LINE_DB=aer_v_3.8\n')
 
     # --LNFL_LINE_DB_FORMAT
     # Format of the line file: gives the length in terms of characters per line.
