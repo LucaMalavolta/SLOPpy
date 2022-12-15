@@ -52,6 +52,7 @@ setup(
         'tqdm>=4.60',
         'pygtc>=0.4.1',
         'tinygp>=0.2.2',
+        'PyAstronomy>=0.18',
         'sphinx-book-theme',
         'myst-parser',
         'myst-nb',

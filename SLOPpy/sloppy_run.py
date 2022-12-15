@@ -41,6 +41,7 @@ def sloppy_run():
     #pipeline_common_routines['PCA_test01'] = SLOPpy.PCA_test01
 
     pipeline_common_routines['pca_preparation'] = SLOPpy.compute_pca_preparation
+    pipeline_common_routines['sysrem_correction'] = SLOPpy.compute_sysrem_correction
 
 
     # molecfit version 1.5

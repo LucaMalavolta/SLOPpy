@@ -273,7 +273,7 @@ def compute_transmission_spectrum(config_in, lines_label, reference='planetRF', 
                 #plt.scatter(input_data[obs]['wave'], preparation[obs]['ratio'], s=2)
                 #plt.xlim(lines_dict['range'][0], lines_dict['range'][1])
                 #plt.show()
-                
+
                 if clv_rm_correction:
 
                     """" CLV + RM computation in the planetary reference frame """
