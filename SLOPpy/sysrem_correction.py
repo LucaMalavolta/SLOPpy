@@ -22,6 +22,7 @@ def compute_sysrem_correction(config_in):
     print()
 
     night_dict = from_config_get_nights(config_in)
+    pca_parameters = from_config_get_pca_parameters(config_in)
 
     for night in night_dict:
 
@@ -36,10 +37,13 @@ def compute_sysrem_correction(config_in):
             print()
 
 
+        n_iter = pca_parameters.get('iterations',5 )
+        ref_iter = pca_parameters.get('ref_iteration',3 )
         sysrem_output = {
             'subroutine': subroutine_name,
             'iterations': n_iter,
-            'pca_outout': True
+            'pca_output': True,
+            'ref_iteration': ref_iter
         }
 
 
@@ -50,7 +54,6 @@ def compute_sysrem_correction(config_in):
         preparation = load_from_cpickle('pca_preparation', config_in['output'], night)
 
         n_obs, n_orders, n_pixels = np.shape(preparation['stack_e2ds']) 
-        n_iter = 5
 
         model_iter = np.ones([n_iter, n_obs, n_orders, n_pixels], dtype=np.double)
         model_out = np.ones([n_iter, n_obs, n_orders, n_pixels], dtype=np.double)
@@ -62,26 +65,28 @@ def compute_sysrem_correction(config_in):
             sr = pyasl.SysRem(obs, sigs)
             previous_residuals = obs.copy()
 
-            for it in range(n_iter):
+            for it in range(0, n_iter):
                 r, a, c = sr.iterate()
                 model_iter[it,:,order,:] =  previous_residuals - r
                 previous_residuals = r.copy()
 
 
-        for it in range(n_iter):
+        for it in range(0, n_iter):
 
             # Full model is the sum of all the models until the given iteration 
             model_out[it,:, :, :] = np.sum(model_iter[:it+1,:, :, :], axis=0)
 
-            import matplotlib.pyplot as plt
-            plt.figure()
-            plt.title("Model " + repr(it))
-            plt.imshow( model_out[it,:, 10, :], origin='lower', aspect="auto")
-            plt.show()
+            #import matplotlib.pyplot as plt
+            #plt.figure()
+            #plt.title("Model " + repr(it))
+            #plt.imshow( model_out[it,:, 10, :], origin='lower', aspect="auto")
+            #plt.show()
 
             it_string = str(it).zfill(2)
 
-            sysrem_output[it_string] = {}
+            sysrem_output[it_string] = {
+                'model': model_out[it,:, :, :]
+            }
 
             for i_obs, obs in enumerate(lists['observations']):
 
@@ -90,7 +95,7 @@ def compute_sysrem_correction(config_in):
                 sysrem_output[it_string][obs]['ratio_err']  = preparation['stack_e2ds_err'][i_obs, :, :]/model_out[it, i_obs, :, :]
 
 
-        save_to_cpickle('transmission_preparation', preparation, config_in['output'], night)
+        save_to_cpickle('transmission_preparation', sysrem_output, config_in['output'], night)
 
     print()
     """ Keep going from here after preparation, unless the subroutines has been called just

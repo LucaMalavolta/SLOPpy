@@ -25,6 +25,7 @@ from SLOPpy.master_out import *
 from SLOPpy.transmission_spectrum_preparation import *
 from SLOPpy.transmission_spectrum import *
 from SLOPpy.transmission_spectrum_average import *
+from SLOPpy.transmission_spectrum_shortcuts import *
 from SLOPpy.second_telluric_correction_on_transmission import *
 #from SLOPpy.clv_rm_modelling import *
 from SLOPpy.compare_clv_rm_effects import *

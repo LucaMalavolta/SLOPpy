@@ -130,6 +130,13 @@ def sloppy_run():
     pipeline_lines_routines['transmission_spectrum_stellarRF'] = SLOPpy.compute_transmission_spectrum_stellarRF
     pipeline_lines_routines['transmission_spectrum'] = SLOPpy.compute_transmission_spectrum
 
+    pipeline_lines_routines['transmission_spectrum_planetRF_iterative'] = SLOPpy.compute_transmission_spectrum_planetRF_iterative
+    pipeline_lines_routines['transmission_spectrum_observerRF_iterative'] = SLOPpy.compute_transmission_spectrum_observerRF_iterative
+    pipeline_lines_routines['transmission_spectrum_stellarRF_iterative'] = SLOPpy.compute_transmission_spectrum_stellarRF_iterative
+    pipeline_lines_routines['transmission_spectrum_iterative'] = SLOPpy.compute_transmission_spectrum_iterative
+
+    
+
     pipeline_lines_routines['transmission_spectrum_average_planetRF'] = SLOPpy.compute_transmission_spectrum_average_planetRF
     pipeline_lines_routines['transmission_spectrum_average_observerRF'] = SLOPpy.compute_transmission_spectrum_average_observerRF
     pipeline_lines_routines['transmission_spectrum_average_stellarRF'] = SLOPpy.compute_transmission_spectrum_average_stellarRF
@@ -278,6 +285,12 @@ def sloppy_run():
     plot_lines_routines['transmission_spectrum_stellarRF'] = SLOPpy.plot_transmission_spectrum_stellarRF
     plot_lines_routines['transmission_spectrum'] = SLOPpy.plot_transmission_spectrum
 
+    plot_lines_routines['transmission_spectrum_planetRF_iterative'] = SLOPpy.plot_transmission_spectrum_planetRF_iterative
+    plot_lines_routines['transmission_spectrum_observerRF_iterative'] = SLOPpy.plot_transmission_spectrum_observerRF_iterative
+    plot_lines_routines['transmission_spectrum_stellarRF_iterative'] = SLOPpy.plot_transmission_spectrum_stellarRF_iterative
+    plot_lines_routines['transmission_spectrum_iterative'] = SLOPpy.plot_transmission_spectrum_iterative
+
+
 
 
 
@@ -364,38 +377,42 @@ def sloppy_run():
     #    if key in pipeline: func(config_in)
 
     #TODO: must be updated to be performed on a single set of spectral lines
+
+    try:
+        plots = config_in['plots']
+        has_plots = len(plots)
+    except (KeyError, TypeError):
+        return
+
     print()
     print("*** Plot Subroutines ***")
     print()
 
-    """ Retrieving the dictionary with the plot recipes"""
-    if 'plots' in config_in:
+    plots = config_in['plots']
+    nights = config_in['nights']
 
-        plots = config_in['plots']
-        nights = config_in['nights']
+    for key in plots:
+        if key in plot_preparation_routines:
+            plot_preparation_routines[key](config_in)
+            print()
+
+    for key in plots:
+        if key in plot_routines:
+            plot_routines[key](config_in)
+            print()
+
+    for lines_label in config_in['spectral_lines']:
 
         for key in plots:
-            if key in plot_preparation_routines:
-                plot_preparation_routines[key](config_in)
+
+            for night in nights:
+                    if key in plot_lines_routines:
+                        plot_lines_routines[key](config_in, lines_label, night)
+                        print()
+
+            if key in plot_lines_average_routines:
+                plot_lines_average_routines[key](config_in, lines_label)
                 print()
-
-        for key in plots:
-            if key in plot_routines:
-                plot_routines[key](config_in)
-                print()
-
-        for lines_label in config_in['spectral_lines']:
-
-            for key in plots:
-
-                for night in nights:
-                        if key in plot_lines_routines:
-                            plot_lines_routines[key](config_in, lines_label, night)
-                            print()
-
-                if key in plot_lines_average_routines:
-                    plot_lines_average_routines[key](config_in, lines_label)
-                    print()
 
         #for key, func in plot_preparation_routines.items():
         #    if key in plots: func(config_in)
