@@ -71,7 +71,7 @@ def compute_transmission_spectrum(config_in, lines_label, reference='planetRF', 
         preparation_input = load_from_cpickle('transmission_preparation', config_in['output'], night)
 
         if preparation_input.get('pca_output', False):
-            if pca_iteration > 0:
+            if pca_iteration >= 0:
                 it_string = str(pca_iteration).zfill(2)
             else:
                 it_string = str(preparation_input.get('ref_iteration', 0)).zfill(2)
@@ -144,10 +144,8 @@ def compute_transmission_spectrum(config_in, lines_label, reference='planetRF', 
 
             if len(it_string) > 0:
                 transmission['pca_output'] = True
-                blaze_function = np.ones_like(calib_data['blaze'])
             else:
                 transmission['pca_output'] = False
-                blaze_function = calib_data['blaze']
 
             print_warning = True
 
@@ -241,24 +239,47 @@ def compute_transmission_spectrum(config_in, lines_label, reference='planetRF', 
 
                 """ Step 2): rebin the 2D ratio spectra to 1D """
 
-                transmission[obs]['rebinned'] = \
-                    rebin_2d_to_1d(input_data[obs]['wave'],
-                                   input_data[obs]['step'],
-                                   preparation[obs]['ratio'],
-                                   blaze_function,
-                                   transmission['wave'],
-                                   transmission['step'],
-                                   rv_shift=rv_shift)
+                if transmission['pca_output']:
 
-                transmission[obs]['rebinned_err'] = \
-                    rebin_2d_to_1d(input_data[obs]['wave'],
-                                   input_data[obs]['step'],
-                                   preparation[obs]['ratio_err'],
-                                   blaze_function,
-                                   transmission['wave'],
-                                   transmission['step'],
-                                   rv_shift=rv_shift,
-                                   is_error=True)
+                    transmission[obs]['rebinned'] = \
+                        rebin_2d_to_1d(input_data[obs]['wave'],
+                                    input_data[obs]['step'],
+                                    preparation[obs]['ratio'],
+                                    np.ones_like(calib_data['blaze']),
+                                    transmission['wave'],
+                                    transmission['step'],
+                                    preserve_flux=False,
+                                    rv_shift=rv_shift)
+
+                    transmission[obs]['rebinned_err'] = \
+                        rebin_2d_to_1d(input_data[obs]['wave'],
+                                    input_data[obs]['step'],
+                                    preparation[obs]['ratio_err'],
+                                    np.ones_like(calib_data['blaze']),
+                                    transmission['wave'],
+                                    transmission['step'],
+                                    rv_shift=rv_shift,
+                                    preserve_flux=False,
+                                    is_error=True)
+                else:
+                    transmission[obs]['rebinned'] = \
+                        rebin_2d_to_1d(input_data[obs]['wave'],
+                                    input_data[obs]['step'],
+                                    preparation[obs]['ratio'],
+                                    calib_data['blaze'],
+                                    transmission['wave'],
+                                    transmission['step'],
+                                    rv_shift=rv_shift)
+
+                    transmission[obs]['rebinned_err'] = \
+                        rebin_2d_to_1d(input_data[obs]['wave'],
+                                    input_data[obs]['step'],
+                                    preparation[obs]['ratio_err'],
+                                    calib_data['blaze'],
+                                    transmission['wave'],
+                                    transmission['step'],
+                                    rv_shift=rv_shift,
+                                    is_error=True)
 
                 #import matplotlib.pyplot as plt
                 #plt.scatter(input_data[obs]['wave'], preparation[obs]['ratio'], s=2)
@@ -520,7 +541,7 @@ def plot_transmission_spectrum(config_in, lines_label, night_input='', results_i
         preparation_input = load_from_cpickle('transmission_preparation', config_in['output'], night)
 
         if preparation_input.get('pca_output', False):
-            if pca_iteration > 0:
+            if pca_iteration >= 0:
                 it_string = str(pca_iteration).zfill(2)
             else:
                 it_string = str(preparation_input.get('ref_iteration', 0)).zfill(2)
