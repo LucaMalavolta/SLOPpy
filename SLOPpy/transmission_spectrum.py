@@ -401,7 +401,7 @@ def compute_transmission_spectrum(config_in, lines_label, reference='planetRF', 
 
                 else:
                     transmission[obs]['continuum_coeff'] = None
-                    transmission[obs]['continuum'] = np.ones_like(np.transmission['wave'])
+                    transmission[obs]['continuum'] = np.ones_like(transmission['wave'])
                     transmission[obs]['normalized'] = transmission[obs]['corrected'].copy()
                     transmission[obs]['normalized_err'] = transmission[obs]['corrected_err'].copy()
 
@@ -412,10 +412,10 @@ def compute_transmission_spectrum(config_in, lines_label, reference='planetRF', 
                     # plt.show()
 
                     transmission[obs]['continuum_uncorrected_coeff'] = None
-                    transmission[obs]['continuum_uncorrected'] = np.ones_like(np.transmission['wave'])
+                    transmission[obs]['continuum_uncorrected'] = np.ones_like(transmission['wave'])
                     transmission[obs]['normalized_uncorrected'] = transmission[obs]['rebinned'].copy()
                     transmission[obs]['normalized_uncorrected_err'] = transmission[obs]['rebinned_err'].copy()
-
+                    print_warning = False
 
             transm_average = np.zeros([len(lists['transit_full']), transmission['size']])
             weights_average = np.zeros([len(lists['transit_full']), transmission['size']])
