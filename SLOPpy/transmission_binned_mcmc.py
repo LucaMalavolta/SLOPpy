@@ -10,12 +10,31 @@ from SLOPpy.subroutines.plot_subroutines import *
 from SLOPpy.subroutines.bayesian_emcee import *
 # from SLOPpy.subroutines.rebin_subroutines import *
 
-__all__ = ['compute_transmission_binned_mcmc',
-           'plot_transmission_binned_mcmc']
+__all__ = ['compute_transmission_binned_mcmc','compute_transmission_binned_mcmc_iterative',
+           'plot_transmission_binned_mcmc','plot_transmission_binned_mcmc_iterative']
 
 subroutine_name = 'transmission_binned_mcmc'
 
-def compute_transmission_binned_mcmc(config_in, lines_label, reference='planetRF'):
+
+def compute_transmission_binned_mcmc_iterative(config_in, lines_label):
+
+    pca_parameters = from_config_get_pca_parameters(config_in)
+    for it in range(0, pca_parameters.get('iterations',5)):
+        compute_transmission_binned_mcmc(config_in, lines_label, reference='planetRF', pca_iteration=it)
+
+
+
+def plot_transmission_binned_mcmc_iterative(config_in, lines_label, night_input='', reference='planetRF'):
+
+    pca_parameters = from_config_get_pca_parameters(config_in)
+    for it in range(0, pca_parameters.get('iterations',5)):
+        plot_transmission_binned_mcmc(config_in, lines_label, night_input=night_input, reference=reference, pca_iteration=it)
+
+
+
+
+
+def compute_transmission_binned_mcmc(config_in, lines_label, reference='planetRF', pca_iteration=-1):
 
     night_dict = from_config_get_nights(config_in)
     planet_dict = from_config_get_planet(config_in)
@@ -29,9 +48,9 @@ def compute_transmission_binned_mcmc(config_in, lines_label, reference='planetRF
     """
 
     spectral_lines = from_config_get_spectral_lines(config_in)
-    line_iter_dict = spectral_lines[lines_label]
+    lines_dict = spectral_lines[lines_label]
 
-    sampler_pams = line_iter_dict['sampler_parameters']
+    sampler_pams = lines_dict['sampler_parameters']
     sampler_name = sampler_pams.get('sampler_name', 'emcee')
 
     # TODO reference as input parameter
@@ -79,17 +98,18 @@ def compute_transmission_binned_mcmc(config_in, lines_label, reference='planetRF
 
     model_case = 10
 
-    norm_dict = line_iter_dict.get('normalization', clv_rm_dict.get('normalization', {}))
+    norm_dict = lines_dict.get('normalization', clv_rm_dict.get('normalization', {}))
     norm_pams={}
+    norm_pams['normalize_transmission'] = norm_dict.get('normalize_transmission', True)
     norm_pams['model_poly_degree'] = norm_dict.get('model_poly_degree', 2)
     norm_pams['spectra_poly_degree'] = norm_dict.get('spectra_poly_degree', 2)
     norm_pams['lower_threshold'] = norm_dict.get('lower_threshold', 0.950)
     norm_pams['percentile_selection'] = norm_dict.get('percentile_selection', 10)
 
     # Added back-compatibility to old or "wrong" keys
-    clv_rm_correction = line_iter_dict.get('clv_rm_correction', True)
+    clv_rm_correction = lines_dict.get('clv_rm_correction', True)
 
-    fit_pams = line_iter_dict['fit_parameters']
+    fit_pams = lines_dict['fit_parameters']
     free_Rp = fit_pams.get('free_Rp', True) \
         and fit_pams.get('free_planet_radius', True) \
         and clv_rm_correction
@@ -107,7 +127,7 @@ def compute_transmission_binned_mcmc(config_in, lines_label, reference='planetRF
 
 
 
-    if len(line_iter_dict['lines']) < 2:
+    if len(lines_dict['lines']) < 2:
         if free_Rp is True and free_winds is True:
             model_case = 0
         if free_Rp is True and free_winds is False:
@@ -157,7 +177,7 @@ def compute_transmission_binned_mcmc(config_in, lines_label, reference='planetRF
     print('      shared_winds:    (default: False) ', shared_winds)
     print('      shared_FWHM:     (default: False) ', shared_FWHM)
     print('      jitter:          (default: True)  ', jitter_flag)
-    print('      # lines:        ', len(line_iter_dict['lines']))
+    print('      # lines:        ', len(lines_dict['lines']))
     print('      model_case:     ', model_case)
 
     """ parameters list:
@@ -171,7 +191,7 @@ def compute_transmission_binned_mcmc(config_in, lines_label, reference='planetRF
     lines_center = np.empty(0)  # laboratory wavelength of spectral lines
     pam_index = 0  # keep track of the number of variables
 
-    for line_key, line_val in line_iter_dict['lines'].items():
+    for line_key, line_val in lines_dict['lines'].items():
         pam_name = line_key + '_contrast'
         pams_dict[pam_name] = pam_index
         pams_list.append(pam_name)
@@ -186,7 +206,7 @@ def compute_transmission_binned_mcmc(config_in, lines_label, reference='planetRF
         #
 
         if model_case in [0, 1, 2, 3, 10, 11, 14, 20, 21, 24]:
-            # if not line_iter_dict['fit_parameters']['shared_fwhm']:
+            # if not lines_dict['fit_parameters']['shared_fwhm']:
             pam_name = line_key + '_fwhm'
             pams_dict[pam_name] = pam_index
             pams_list.append(pam_name)
@@ -194,8 +214,8 @@ def compute_transmission_binned_mcmc(config_in, lines_label, reference='planetRF
             theta_start = np.append(theta_start, 5.0)
             pam_index += 1
 
-        # if line_iter_dict['fit_parameters']['fixed_separation']: continue
-        # if not line_iter_dict['fit_parameters']['lines_shift']: continue
+        # if lines_dict['fit_parameters']['fixed_separation']: continue
+        # if not lines_dict['fit_parameters']['lines_shift']: continue
 
         if model_case in [0, 2, 10, 12, 20, 22]:
             pam_name = line_key + '_winds'
@@ -206,7 +226,7 @@ def compute_transmission_binned_mcmc(config_in, lines_label, reference='planetRF
             pam_index += 1
 
     if model_case in [12, 13, 15, 22, 23, 25]:
-        # if line_iter_dict['fit_parameters']['shared_fwhm']:
+        # if lines_dict['fit_parameters']['shared_fwhm']:
         pam_name = 'shared_fwhm'
         pams_dict[pam_name] = pam_index
         pams_list.append(pam_name)
@@ -215,7 +235,7 @@ def compute_transmission_binned_mcmc(config_in, lines_label, reference='planetRF
         pam_index += 1
 
     if model_case in [11, 13, 21, 23]:
-        # if line_iter_dict['fit_parameters']['fixed_separation'] and line_iter_dict['fit_parameters']['lines_shift']:
+        # if lines_dict['fit_parameters']['fixed_separation'] and lines_dict['fit_parameters']['lines_shift']:
         pam_name = 'shared_winds'
         pams_dict[pam_name] = pam_index
         pams_list.append(pam_name)
@@ -268,8 +288,29 @@ def compute_transmission_binned_mcmc(config_in, lines_label, reference='planetRF
         observational_pams = load_from_cpickle(
             'observational_pams', config_in['output'], night)
 
+        ### Moved here to retrieve infomration about wheter PCA correction has been performed or not
+        preparation_input = load_from_cpickle('transmission_preparation', config_in['output'], night)
+
+        if preparation_input.get('pca_output', False):
+            if pca_iteration >= 0:
+                it_string = str(pca_iteration).zfill(2)
+            else:
+                it_string = str(preparation_input.get('ref_iteration', 0)).zfill(2)
+            preparation = preparation_input[it_string]
+        else:
+            preparation = preparation_input
+            it_string = ''
+
+        """ This need to be checked only once, so it's ok to take the output of the last night 
+            and propagate it to the rest of subroutine
+        """
+        if len(it_string) > 0:
+            pca_output = True
+        else:
+            pca_output = False
+
         try:
-            mcmc_data = load_from_cpickle(subroutine_name + '_data', config_in['output'], night, lines_label)
+            mcmc_data = load_from_cpickle(subroutine_name + '_data', config_in['output'], night, lines_label, it_string)
 
             clv_rm_radius = mcmc_data['clv_rm_radius']
             clv_rm_grid = mcmc_data['clv_rm_grid']
@@ -293,8 +334,6 @@ def compute_transmission_binned_mcmc(config_in, lines_label, reference='planetRF
                 'calibration_fibA', config_in['output'], night)
             input_data = retrieve_observations(
                 config_in['output'], night, lists['observations'])
-            preparation = load_from_cpickle(
-                'transmission_preparation', config_in['output'], night)
 
             if clv_rm_correction:
                 try:
@@ -315,27 +354,27 @@ def compute_transmission_binned_mcmc(config_in, lines_label, reference='planetRF
             }
 
             processed['common'] = {
-                'range': line_iter_dict['fit_parameters']['range']
+                'range': lines_dict['fit_parameters']['range']
             }
             processed['common']['wave'] = np.arange(processed['common']['range'][0],
                                                     processed['common']['range'][1],
-                                                    line_iter_dict['fit_parameters']['bin_step'],
+                                                    lines_dict['fit_parameters']['bin_step'],
                                                     dtype=np.double)
             processed['common']['size'] = len(processed['common']['wave'])
             processed['common']['step'] = np.ones(
-                processed['common']['size'], dtype=np.double) * line_iter_dict['fit_parameters']['bin_step']
+                processed['common']['size'], dtype=np.double) * lines_dict['fit_parameters']['bin_step']
 
             processed['common_extended'] = {
-                'range': line_iter_dict['range']
+                'range': lines_dict['range']
             }
             processed['common_extended']['wave'] = np.arange(processed['common_extended']['range'][0],
                                                     processed['common_extended']['range'][1],
-                                                    line_iter_dict['fit_parameters']['bin_step'],
+                                                    lines_dict['fit_parameters']['bin_step'],
                                                     dtype=np.double)
             processed['common_extended']['size'] = len(
                 processed['common_extended']['wave'])
             processed['common_extended']['step'] = np.ones(
-                processed['common_extended']['size'], dtype=np.double) * line_iter_dict['fit_parameters']['bin_step']
+                processed['common_extended']['size'], dtype=np.double) * lines_dict['fit_parameters']['bin_step']
 
             """ Continuum normalization preparatory steps:
                 1) exclusion of regions with planetary lines
@@ -351,7 +390,7 @@ def compute_transmission_binned_mcmc(config_in, lines_label, reference='planetRF
                 1) exclusion of regions with planetary lines, taking into
                    account the planetary RV semi-amplitude
             """
-            for line_key, line_val in line_iter_dict['lines'].items():
+            for line_key, line_val in lines_dict['lines'].items():
                 line_extension = 1.2 * \
                     planet_dict['RV_semiamplitude'][0] * \
                         line_val / speed_of_light_km
@@ -399,52 +438,72 @@ def compute_transmission_binned_mcmc(config_in, lines_label, reference='planetRF
                 """ First step: we rebin the spectra in the Stellar Reference Frame,
                     with the step size decided by the user specifically for the fit
                 """
+
+                if pca_output:
+                    preserve_flux = False
+                    blaze = np.ones_like(calib_data['blaze'])
+                else:
+                    preserve_flux = True
+                    blaze = calib_data['blaze']
+
+
+
+
                 processed[obs] = {}
                 processed[obs]['rebinned'] = \
                     rebin_2d_to_1d(input_data[obs]['wave'],
                                    input_data[obs]['step'],
                                    preparation[obs]['ratio'],
-                                   calib_data['blaze'],
+                                   blaze,
                                    processed['common']['wave'],
                                    processed['common']['step'],
-                                   rv_shift=observational_pams[obs]['rv_shift_ORF2SRF'])
+                                   rv_shift=observational_pams[obs]['rv_shift_ORF2SRF'],
+                                   preserve_flux=preserve_flux)
                 processed[obs]['rebinned_err'] = \
                     rebin_2d_to_1d(input_data[obs]['wave'],
                                    input_data[obs]['step'],
                                    preparation[obs]['ratio_err'],
-                                   calib_data['blaze'],
+                                   blaze,
                                    processed['common']['wave'],
                                    processed['common']['step'],
                                    rv_shift=observational_pams[obs]['rv_shift_ORF2SRF'],
+                                   preserve_flux=preserve_flux,
                                    is_error=True)
 
                 processed[obs]['rebinned_extended'] = \
                     rebin_2d_to_1d(input_data[obs]['wave'],
                                    input_data[obs]['step'],
                                    preparation[obs]['ratio'],
-                                   calib_data['blaze'],
+                                   blaze,
                                    processed['common_extended']['wave'],
                                    processed['common_extended']['step'],
-                                   rv_shift=observational_pams[obs]['rv_shift_ORF2SRF'])
+                                   rv_shift=observational_pams[obs]['rv_shift_ORF2SRF'],
+                                   preserve_flux=preserve_flux)
 
                 """ Continuum normalization:
-                    3) Polynomial fit, everything is hard coded now but personalized
-                    options can be implemented easily in the yaml file
+                    3) Polynomial fit
                 """
+                if norm_pams['normalize_transmission']:
 
-                selection = processed['common_extended']['line_exclusion'] & (
-                    processed[obs]['rebinned_extended'] > np.std(processed[obs]['rebinned_extended']))
+                    selection = processed['common_extended']['line_exclusion'] & (
+                        processed[obs]['rebinned_extended'] > np.std(processed[obs]['rebinned_extended']))
 
-                processed[obs]['norm_coeff'] = \
-                    np.polynomial.chebyshev.chebfit(processed['common_extended']['wave'][selection],
-                                                    processed[obs]['rebinned_extended'][selection],
-                                                    norm_pams['spectra_poly_degree'])
-                processed[obs]['continuum'] = np.polynomial.chebyshev.chebval(
-                    processed['common']['wave'], processed[obs]['norm_coeff'])
-                processed[obs]['normalized'] = processed[obs]['rebinned'] / \
-                    processed[obs]['continuum']
-                processed[obs]['normalized_err'] = processed[obs]['rebinned_err'] / \
-                    processed[obs]['continuum']
+                    processed[obs]['norm_coeff'] = \
+                        np.polynomial.chebyshev.chebfit(processed['common_extended']['wave'][selection],
+                                                        processed[obs]['rebinned_extended'][selection],
+                                                        norm_pams['spectra_poly_degree'])
+                    processed[obs]['continuum'] = np.polynomial.chebyshev.chebval(
+                        processed['common']['wave'], processed[obs]['norm_coeff'])
+                    processed[obs]['normalized'] = processed[obs]['rebinned'] / \
+                        processed[obs]['continuum']
+                    processed[obs]['normalized_err'] = processed[obs]['rebinned_err'] / \
+                        processed[obs]['continuum']
+                else:
+                    processed[obs]['continuum_coeff'] = None
+                    processed[obs]['continuum'] = np.ones_like(processed['common']['wave'])
+                    processed[obs]['normalized'] = processed[obs]['rebinned'].copy()
+                    processed[obs]['normalized_err'] = processed[obs]['rebinned_err'].copy()
+
 
             processed['common']['n_obs'] = len(lists['transit_full'])
             processed['common']['n_radius_grid'] = clv_rm_models['common']['n_radius_grid']
@@ -578,7 +637,7 @@ def compute_transmission_binned_mcmc(config_in, lines_label, reference='planetRF
             }
 
             save_to_cpickle(subroutine_name + '_data', mcmc_data,
-                            config_in['output'], night, lines_label)
+                            config_in['output'], night, lines_label, it_string)
 
             # Forcing memory deallocation
             clv_rm_models = None
@@ -589,7 +648,7 @@ def compute_transmission_binned_mcmc(config_in, lines_label, reference='planetRF
         print("transmission_binned_mcmc           ")
 
         try:
-            results_dict = load_from_cpickle(subroutine_name+'_'+sampler_name+'_results', config_in['output'], night, lines_label)
+            results_dict = load_from_cpickle(subroutine_name+'_'+sampler_name+'_results', config_in['output'], night, lines_label, it_string)
             print("   Transmission MCMC analysis for lines {0:s}, night: {1:s}  already performed".format(
                 lines_label, night))
 
@@ -649,7 +708,7 @@ def compute_transmission_binned_mcmc(config_in, lines_label, reference='planetRF
 
         # getting fit parameters
         lines_center, pams_dict, pams_list, boundaries, theta_start = define_theta_array(
-            model_case, line_iter_dict, planet_dict, n_jitter, allow_emission=allow_emission)
+            model_case, lines_dict, planet_dict, n_jitter, allow_emission=allow_emission)
         ndim = len(theta_start)
 
         if pyde_flag:
@@ -846,7 +905,7 @@ def compute_transmission_binned_mcmc(config_in, lines_label, reference='planetRF
 
 
         save_to_cpickle(subroutine_name+'_'+sampler_name+'_results',
-                        results_dict, config_in['output'], night, lines_label)
+                        results_dict, config_in['output'], night, lines_label, it_string)
 
         # print('   *** physical output')
         #
@@ -863,7 +922,7 @@ def compute_transmission_binned_mcmc(config_in, lines_label, reference='planetRF
 
     print()
     try:
-        all_mcmc_data = load_from_cpickle(subroutine_name+'_data', config_in['output'], night='', lines=lines_label)
+        all_mcmc_data = load_from_cpickle(subroutine_name+'_data', config_in['output'], night='', lines=lines_label, it_string=it_string)
 
         all_clv_rm_radius = all_mcmc_data['clv_rm_radius']
         all_clv_rm_grid = all_mcmc_data['clv_rm_grid']
@@ -884,7 +943,7 @@ def compute_transmission_binned_mcmc(config_in, lines_label, reference='planetRF
 
         for night in night_dict:
 
-            mcmc_data = load_from_cpickle(subroutine_name+'_data', config_in['output'], night, lines_label)
+            mcmc_data = load_from_cpickle(subroutine_name+'_data', config_in['output'], night, lines_label, it_string=it_string)
 
             try:
                 # Building the arrays for the full analysis
@@ -947,11 +1006,11 @@ def compute_transmission_binned_mcmc(config_in, lines_label, reference='planetRF
         }
 
         save_to_cpickle(subroutine_name+'_data', all_mcmc_data,
-                        config_in['output'], night='', lines=lines_label)
+                        config_in['output'], night='', lines=lines_label, it_string=it_string)
 
     try:
         results_dict = load_from_cpickle(subroutine_name+ '_'+ sampler_name+'_results',
-                                         config_in['output'], night='', lines=lines_label)
+                                         config_in['output'], night='', lines=lines_label, it_string=it_string)
         print("   Transmission MCMC analysis for lines {0:s} already performed ".format(
                 lines_label))
 
@@ -1006,7 +1065,7 @@ def compute_transmission_binned_mcmc(config_in, lines_label, reference='planetRF
     except FileNotFoundError:
 
         lines_center, pams_dict, pams_list, boundaries, theta_start = define_theta_array(
-            model_case, line_iter_dict, planet_dict, n_jitter, allow_emission=allow_emission)
+            model_case, lines_dict, planet_dict, n_jitter, allow_emission=allow_emission)
         ndim = len(theta_start)
         ngen = sampler_pams.get('n_gen', 64000)
         nwalkers_mult = sampler_pams.get('n_walkers_mult', 2)
@@ -1203,7 +1262,7 @@ def compute_transmission_binned_mcmc(config_in, lines_label, reference='planetRF
                                                                                     chain_med[1]))
 
         save_to_cpickle(subroutine_name +'_'+sampler_name+'_results',
-                        results_dict, config_in['output'], night='', lines=lines_label)
+                        results_dict, config_in['output'], night='', lines=lines_label, it_string=it_string)
 
 
         print('MCMC completed')
@@ -1268,7 +1327,7 @@ def compute_transmission_binned_mcmc(config_in, lines_label, reference='planetRF
 
 
 
-def plot_transmission_binned_mcmc(config_in, lines_label, night_input='', reference='planetRF'):
+def plot_transmission_binned_mcmc(config_in, lines_label, night_input='', reference='planetRF', pca_iteration=-1):
 
     night_dict = from_config_get_nights(config_in)
     planet_dict = from_config_get_planet(config_in)
@@ -1276,8 +1335,8 @@ def plot_transmission_binned_mcmc(config_in, lines_label, night_input='', refere
     clv_rm_dict = from_config_get_clv_rm(config_in)
 
     spectral_lines = from_config_get_spectral_lines(config_in)
-    line_iter_dict = spectral_lines[lines_label]
-    sampler_pams = line_iter_dict['sampler_parameters']
+    lines_dict = spectral_lines[lines_label]
+    sampler_pams = lines_dict['sampler_parameters']
     sampler_name = sampler_pams.get('sampler_name', 'emcee')
 
     if night_input == '':
@@ -1289,7 +1348,22 @@ def plot_transmission_binned_mcmc(config_in, lines_label, night_input='', refere
 
     for night in night_list:
 
-        results_dict = load_from_cpickle(subroutine_name+'_'+sampler_name+'_results', config_in['output'], night, lines_label)
+
+        preparation_input = load_from_cpickle(
+            'transmission_preparation', config_in['output'], night)
+
+        if preparation_input.get('pca_output', False):
+            if pca_iteration >= 0:
+                it_string = str(pca_iteration).zfill(2)
+            else:
+                it_string = str(preparation_input.get('ref_iteration', 0)).zfill(2)
+        else:
+            it_string = ''
+        preparation_input=None
+
+
+
+        results_dict = load_from_cpickle(subroutine_name+'_'+sampler_name+'_results', config_in['output'], night, lines_label, it_string)
         print("   Transmission MCMC analysis for lines {0:s}, night: {1:s}  already performed".format(
             lines_label, night))
 
@@ -1309,7 +1383,7 @@ def plot_transmission_binned_mcmc(config_in, lines_label, night_input='', refere
         nthin = results_dict['nthin']
         nsteps = results_dict['nsteps']
         nburnin = results_dict['nburnin']
-        
+
         sampler_chain = results_dict['sampler_chain']
 
         start_average = np.average(results_dict['point_start'], axis=0)
@@ -1327,7 +1401,6 @@ def plot_transmission_binned_mcmc(config_in, lines_label, night_input='', refere
 
         sample_size = np.size(flat_chain, axis=0)
         dimen_size = np.size(flat_chain, axis=1)
-    
         corner_plot = {
             'samples': np.zeros([sample_size, dimen_size + 1]),
             'labels': [],
@@ -1390,8 +1463,8 @@ def plot_transmission_binned_mcmc(config_in, lines_label, night_input='', refere
                                                                                     chain_med[1]))
         print('   *** corner plot using pyGTC output ')
 
-        filename_rad = subroutine_name + '_' + reference + '_cornerplot' 
-        output_file = get_filename(filename_rad, config_in['output'], night=night, lines=lines_label, extension='.pdf')
+        filename_rad = subroutine_name + '_' + reference + '_cornerplot'
+        output_file = get_filename(filename_rad, config_in['output'], night=night, lines=lines_label, it_string=it_string, extension='.pdf')
         print('   *** filename: ', output_file)
 
         GTC = pygtc.plotGTC(chains=corner_plot['samples'],

@@ -123,7 +123,9 @@ def sloppy_run():
     pipeline_lines_routines['quick_transmission'] = SLOPpy.compute_quick_transmission
     pipeline_lines_routines['clv_rm_models_lines'] = SLOPpy.compute_clv_rm_models_lines
     pipeline_lines_routines['transmission_mcmc'] = SLOPpy.compute_transmission_mcmc
+    pipeline_lines_routines['transmission_mcmc_iterative'] = SLOPpy.compute_transmission_mcmc_iterative
     pipeline_lines_routines['transmission_binned_mcmc'] = SLOPpy.compute_transmission_binned_mcmc
+    pipeline_lines_routines['transmission_binned_mcmc_iterative'] = SLOPpy.compute_transmission_binned_mcmc_iterative
 
     pipeline_lines_routines['transmission_spectrum_planetRF'] = SLOPpy.compute_transmission_spectrum_planetRF
     pipeline_lines_routines['transmission_spectrum_observerRF'] = SLOPpy.compute_transmission_spectrum_observerRF
