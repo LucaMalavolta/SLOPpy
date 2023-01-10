@@ -137,12 +137,17 @@ def sloppy_run():
     pipeline_lines_routines['transmission_spectrum_stellarRF_iterative'] = SLOPpy.compute_transmission_spectrum_stellarRF_iterative
     pipeline_lines_routines['transmission_spectrum_iterative'] = SLOPpy.compute_transmission_spectrum_iterative
 
-    
 
     pipeline_lines_routines['transmission_spectrum_average_planetRF'] = SLOPpy.compute_transmission_spectrum_average_planetRF
     pipeline_lines_routines['transmission_spectrum_average_observerRF'] = SLOPpy.compute_transmission_spectrum_average_observerRF
     pipeline_lines_routines['transmission_spectrum_average_stellarRF'] = SLOPpy.compute_transmission_spectrum_average_stellarRF
     pipeline_lines_routines['transmission_spectrum_average'] = SLOPpy.compute_transmission_spectrum_average
+
+    pipeline_lines_routines['transmission_spectrum_average_planetRF_iterative'] = SLOPpy.compute_transmission_spectrum_average_planetRF
+    pipeline_lines_routines['transmission_spectrum_average_observerRF_iterative'] = SLOPpy.compute_transmission_spectrum_average_observerRF
+    pipeline_lines_routines['transmission_spectrum_average_stellarRF_iterative'] = SLOPpy.compute_transmission_spectrum_average_stellarRF
+    pipeline_lines_routines['transmission_spectrum_average_iterative'] = SLOPpy.compute_transmission_spectrum_average
+
 
     pipeline_lines_routines['transmission_lightcurve'] = SLOPpy.compute_transmission_lightcurve
     pipeline_lines_routines['transmission_lightcurve_average'] = SLOPpy.compute_transmission_lightcurve_average

@@ -11,9 +11,6 @@ __all__ = ['compute_transmission_spectrum',
            'plot_transmission_spectrum']
 
 
-
-
-
 subroutine_name = 'transmission_spectrum'
 sampler_name = 'emcee'
 
@@ -29,6 +26,7 @@ def compute_transmission_spectrum(config_in, lines_label, reference='planetRF', 
 
     night_dict = from_config_get_nights(config_in)
     ### transmission_dict = from_config_get_transmission(config_in)
+    pca_parameters = from_config_get_pca_parameters(config_in)
 
     spectral_lines = from_config_get_spectral_lines(config_in)
     lines_dict = spectral_lines[lines_label]
@@ -74,7 +72,7 @@ def compute_transmission_spectrum(config_in, lines_label, reference='planetRF', 
             if pca_iteration >= 0:
                 it_string = str(pca_iteration).zfill(2)
             else:
-                it_string = str(preparation_input.get('ref_iteration', 0)).zfill(2)
+                it_string = str(pca_parameters.get('ref_iteration', 3)).zfill(2)
             preparation = preparation_input[it_string]
         else:
             preparation = preparation_input

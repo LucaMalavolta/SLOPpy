@@ -33,6 +33,10 @@ config_default = {
         'use_composite': False,
         'boxcar_smoothing': 3,
     },
+    'pca_parameters': {
+        'iterations': 5,
+        'ref_iteration': 0,
+    },
     'settings': {
         'full_output': False
     }

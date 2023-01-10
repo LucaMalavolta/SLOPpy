@@ -166,6 +166,14 @@ def pars_input(config_in):
             if key not in config_in['molecfit']:
                  config_in['molecfit'][key] = key_val
 
+    if 'molecfit' not in config_in:
+        config_in['molecfit'] = config_default['molecfit'].copy()
+    else:
+        for key, key_val in config_default['molecfit'].items():
+            if key not in config_in['molecfit']:
+                 config_in['molecfit'][key] = key_val
+
+
 
     for night in config_in['nights']:
 
@@ -422,4 +430,4 @@ def from_config_get_pca_parameters(config_in):
     try:
         return config_in['pca_parameters']
     except:
-        return None
+        return {}

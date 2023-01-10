@@ -888,7 +888,7 @@ def compute_transmission_mcmc(config_in, lines_label, reference='planetRF', pca_
 
         for night in night_dict:
 
-            mcmc_data = load_from_cpickle(subroutine_name+'_data', config_in['output'], night, lines_label, , it_string=it_string)
+            mcmc_data = load_from_cpickle(subroutine_name+'_data', config_in['output'], night, lines_label, it_string=it_string)
 
             try:
                 # Building the arrays for the full analysis
