@@ -5,39 +5,10 @@ from SLOPpy.subroutines.io_subroutines import *
 from SLOPpy.subroutines.fit_subroutines import *
 from SLOPpy.subroutines.shortcuts import *
 
-__all__ = ['compute_transmission_spectrum_average_planetRF',
-           'plot_transmission_spectrum_average_planetRF',
-           'compute_transmission_spectrum_average_observerRF',
-           'plot_transmission_spectrum_average_observerRF',
-           'compute_transmission_spectrum_average_stellarRF',
-           'plot_transmission_spectrum_average_stellarRF',
+__all__ = [
            'compute_transmission_spectrum_average',
            'plot_transmission_spectrum_average'
            ]
-
-
-def compute_transmission_spectrum_average_planetRF(config_in, lines_label):
-    plot_transmission_spectrum_average(config_in, lines_label, reference='planetRF')
-
-
-def plot_transmission_spectrum_average_planetRF(config_in, lines_label, night_input='', results_input=''):
-    plot_transmission_spectrum_average(config_in, lines_label, night_input, results_input, reference='planetRF')
-
-
-def compute_transmission_spectrum_average_observerRF(config_in, lines_label):
-    compute_transmission_spectrum_average(config_in, lines_label, reference='observerRF')
-
-
-def plot_transmission_spectrum_average_observerRF(config_in, lines_label, night_input='', results_input=''):
-    plot_transmission_spectrum_average(config_in, lines_label, night_input, results_input, reference='observerRF')
-
-
-def compute_transmission_spectrum_average_stellarRF(config_in, lines_label):
-    compute_transmission_spectrum_average(config_in, lines_label, reference='stellarRF')
-
-
-def plot_transmission_spectrum_average_stellarRF(config_in, lines_label, night_input='', results_input=''):
-    plot_transmission_spectrum_average(config_in, lines_label, night_input, results_input, reference='stellarRF')
 
 
 subroutine_name = 'transmission_spectrum_average'
@@ -45,7 +16,7 @@ pick_files =  'transmission_spectrum'
 sampler = 'emcee'
 
 
-def compute_transmission_spectrum_average(config_in, lines_label, reference='planetRF'):
+def compute_transmission_spectrum_average(config_in, lines_label, reference='planetRF', pca_iteration=-1):
 
     night_dict = from_config_get_nights(config_in)
 
@@ -88,10 +59,26 @@ def compute_transmission_spectrum_average(config_in, lines_label, reference='pla
 
     for results_selection in results_list:
 
+        """ First check to see if we need to compute the average transmission
+        iteratively when PCA has been employed """
+
+        for night in night_dict:
+            preparation_input = load_from_cpickle('transmission_preparation', config_in['output'], night)
+            if preparation_input.get('pca_output', False):
+                if pca_iteration >= 0:
+                    it_string = str(pca_iteration).zfill(2)
+                else:
+                    it_string = str(pca_parameters.get('ref_iteration')).zfill(2)
+            else:
+                it_string = ''
+            preparation = None
+            break
+
+
         transmission_average = transmission_average_template.copy()
 
         try:
-            transmission_average = load_from_cpickle(subroutine_name + '_' + reference + '_' + results_selection, config_in['output'], lines=lines_label)
+            transmission_average = load_from_cpickle(subroutine_name + '_' + reference + '_' + results_selection, config_in['output'], lines=lines_label, it_string=it_string)
             print("{0:45s}    {1:s}   {2:s}".format(subroutine_name + '_' + reference, results_selection, 'Retrieved'))
             continue
         except (FileNotFoundError, IOError):
@@ -101,7 +88,7 @@ def compute_transmission_spectrum_average(config_in, lines_label, reference='pla
 
         #skip_iteration = False
         for night in night_dict:
-            """ Retrieving the list of observations"""
+            # """ Retrieving the list of observations"""
 
             total_lists[night] = load_from_cpickle('lists', config_in['output'], night)
             #try:
@@ -111,7 +98,7 @@ def compute_transmission_spectrum_average(config_in, lines_label, reference='pla
             #    transmission_average[night] = load_from_cpickle('transmission_'+reference, config_in['output'], night)
 
             try:
-                transmission_average[night] = load_from_cpickle(pick_files + '_' + reference + '_' + results_selection, config_in['output'], night, lines_label)
+                transmission_average[night] = load_from_cpickle(pick_files + '_' + reference + '_' + results_selection, config_in['output'], night, lines_label, it_string)
             except:
                 skip_iteration = True
                 print(skip_iteration)
@@ -207,10 +194,10 @@ def compute_transmission_spectrum_average(config_in, lines_label, reference='pla
                         preserve_flux=False,
                         is_error=True)
 
-        save_to_cpickle(subroutine_name + '_' + reference + '_' + results_selection, transmission_average, config_in['output'], lines=lines_label)
+        save_to_cpickle(subroutine_name + '_' + reference + '_' + results_selection, transmission_average, config_in['output'], lines=lines_label, it_string=it_string)
 
 
-def plot_transmission_spectrum_average(config_in, lines_label, night_input='', results_input='', reference='planetRF'):
+def plot_transmission_spectrum_average(config_in, lines_label, night_input='', results_input='', reference='planetRF', pca_iteration=-1):
 
     spectral_lines = from_config_get_spectral_lines(config_in)
     lines_dict = spectral_lines[lines_label]
@@ -228,18 +215,35 @@ def plot_transmission_spectrum_average(config_in, lines_label, night_input='', r
 
     interactive_plots = from_config_get_interactive_plots(config_in)
 
+
+
+    # Workaround to check if the transmission spectrum has been obtained through PCA iterations
+    night_dict = from_config_get_nights(config_in)
+    for night in night_dict:
+        preparation_input = load_from_cpickle('transmission_preparation', config_in['output'], night)
+
+        if preparation_input.get('pca_output', False):
+            if pca_iteration >= 0:
+                it_string = str(pca_iteration).zfill(2)
+            else:
+                it_string = str(preparation_input.get('ref_iteration')).zfill(2)
+        else:
+            it_string = ''
+        preparation_input = None
+        break
+
+
+
     for results_selection in results_list:
 
         try:
-            transmission_average = load_from_cpickle(subroutine_name + '_' + reference + '_' + results_selection, config_in['output'], lines=lines_label)
+            transmission_average = load_from_cpickle(subroutine_name + '_' + reference + '_' + results_selection, config_in['output'], lines=lines_label, it_string=it_string)
             print("{0:45s}    {1:s}   {2:s}".format(subroutine_name + '_' + reference, results_selection, 'Plotting'))
         except (FileNotFoundError, IOError):
             print("{0:45s}                         {1:s}".format(subroutine_name + '_' + reference, 'Plot skipped'))
             return
 
         filename_rad = subroutine_name + '_' + reference + '_' + results_selection
-
-        night_dict = from_config_get_nights(config_in)
 
         fig = plt.figure(figsize=(12, 9))
 
@@ -321,7 +325,7 @@ def plot_transmission_spectrum_average(config_in, lines_label, night_input='', r
         ax1.set_title('Average in-transit transmission spectrum in {0:s}'.format(reference))
         ax2.set_title('Average out-transit transmission spectrum in {0:s}'.format(reference))
 
-        output_file = get_filename(filename_rad + '_binned', config_in['output'], night='', lines=lines_label, extension='.pdf')
+        output_file = get_filename(filename_rad + '_binned', config_in['output'], night='', lines=lines_label, extension='.pdf', it_string=it_string)
         plt.savefig('plots/'+output_file, bbox_inches='tight', dpi=300)
         if interactive_plots:
             plt.show()

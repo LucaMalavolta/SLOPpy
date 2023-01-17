@@ -11,5 +11,6 @@ argparse >=1.4
 h5py >= 3.7.0
 tqdm >= 4.60
 pygtc >= 0.4.1
+PyAstronomy >= 0.18
 ###### Requirements without Version Specifiers ######
 scikit-learn

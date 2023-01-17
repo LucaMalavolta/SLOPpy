@@ -34,35 +34,43 @@ __all__ = ["save_to_cpickle",
            "from_config_get_molecfit",
            "from_config_get_transmission_mcmc",
            "from_config_get_spectral_lines",
-           "from_config_get_interactive_plots"]
+           "from_config_get_interactive_plots",
+           "from_config_get_pca_parameters"]
 
 accepted_extensions = ['.yaml', '.yml', '.conf', '.config', '.input', ]
 
 
-def save_to_cpickle(fname, dictionary, output, night='', lines=''):
+def save_to_cpickle(fname, dictionary, output, night='', lines='', it_string=''):
 
-    output_file = get_filename(fname, output, night, lines)
+    output_file = get_filename(fname, output, night, lines, it_string)
     pickle.dump(dictionary, open(output_file, "wb"))
 
 
-def load_from_cpickle(fname, output, night='', lines=''):
+def load_from_cpickle(fname, output, night='', lines='', it_string=''):
 
-    output_file = get_filename(fname, output, night, lines)
+    output_file = get_filename(fname, output, night, lines, it_string)
     return pickle.load(open(output_file, "rb"))
 
 
-def delete_cpickle(fname, output, night='', lines=''):
+def delete_cpickle(fname, output, night='', lines='', it_string=''):
 
-    output_file = get_filename(fname, output, night, lines)
+    output_file = get_filename(fname, output, night, lines, it_string)
     os.remove(output_file)
 
-def check_existence_cpickle(fname, output, night='', lines=''):
+def check_existence_cpickle(fname, output, night='', lines='', it_string=''):
 
-    output_file = get_filename(fname, output, night, lines)
+    output_file = get_filename(fname, output, night, lines, it_string)
     return path.isfile(output_file)
 
 
-def get_filename(fname, output, night, lines='', extension=".p"):
+def get_filename(fname, output, night, lines='', it_string='', extension=".p"):
+
+    str_lines = output
+    for str_input in [lines, night, fname, it_string]:
+        if len(str_input) > 0:
+            str_lines += '_' + str_input
+    return str_lines + extension
+
     if lines == '':
         if night == '':
             return output + '_' + fname + extension
@@ -158,6 +166,14 @@ def pars_input(config_in):
             if key not in config_in['molecfit']:
                  config_in['molecfit'][key] = key_val
 
+    if 'molecfit' not in config_in:
+        config_in['molecfit'] = config_default['molecfit'].copy()
+    else:
+        for key, key_val in config_default['molecfit'].items():
+            if key not in config_in['molecfit']:
+                 config_in['molecfit'][key] = key_val
+
+
 
     for night in config_in['nights']:
 
@@ -231,18 +247,19 @@ def get_filelists(night_selected):
         NOT on the archive directory: in this way it is possible to try different
         combinations of nights and files without making a mess in the archive """
 
-    files_list = np.genfromtxt(night_selected['all'], dtype=str)
+    files_list = np.atleast_1d(np.genfromtxt(night_selected['all'], dtype=str))
+
     try:
-        files_transit_out = np.genfromtxt(night_selected['out_transit'], dtype=str)
-        files_transit_in = np.genfromtxt(night_selected['in_transit'], dtype=str)
-        files_transit_full = np.genfromtxt(night_selected['full_transit'], dtype=str)
+        files_transit_out = np.atleast_1d(np.genfromtxt(night_selected['out_transit'], dtype=str))
+        files_transit_in = np.atleast_1d(np.genfromtxt(night_selected['in_transit'], dtype=str))
+        files_transit_full = np.atleast_1d(np.genfromtxt(night_selected['full_transit'], dtype=str))
     except (FileNotFoundError, IOError):
         files_transit_out = None
         files_transit_in = None
         files_transit_full = None
 
     try:
-        files_telluric = np.genfromtxt(night_selected['telluric_list'], dtype=str)
+        files_telluric = np.atleast_1d(np.genfromtxt(night_selected['telluric_list'], dtype=str))
     except (FileNotFoundError, IOError):
         files_telluric = None
 
@@ -404,3 +421,14 @@ def from_config_get_interactive_plots(config_in):
         return config_in['interactive_plots']
     except:
         return False
+
+def from_config_get_pca_parameters(config_in):
+    """
+    This subroutine creates a shortcut to the system dictionary
+    :param config_in:
+    :return: dictionary
+    """
+    try:
+        return config_in['pca_parameters']
+    except:
+        return {}

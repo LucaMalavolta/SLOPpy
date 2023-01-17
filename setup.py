@@ -11,7 +11,7 @@ long_description = (this_directory / "README.md").read_text()
 
 setup(
     name="SLOPpy-package",
-    version='1.0.1',
+    version='1.0.2',
     author="Daniela Sicilia, Luca Malavolta, et al.",
 	author_email = 'daniela.sicilia@inaf.it, luca.malavolta@unipd.it',
 	url = 'https://github.com/LucaMalavolta/SLOPpy',
@@ -52,6 +52,7 @@ setup(
         'tqdm>=4.60',
         'pygtc>=0.4.1',
         'tinygp>=0.2.2',
+        'PyAstronomy>=0.18',
         'sphinx-book-theme',
         'myst-parser',
         'myst-nb',
