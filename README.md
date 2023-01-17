@@ -1,6 +1,6 @@
 ### Spectral Lines Of Planets with python
 ***
-### `SLOPpy` version 1.0.1 - December 2022
+### `SLOPpy` version 1.0.2 - January 2023
 
 **Main contributors**
 Daniela Sicilia,
@@ -53,6 +53,10 @@ This new keyword specify the location of the `esorex` executable: if the command
 
 
 **Changelog** 
+
+- Version 1.0.2:
+
+    Minor bugfix
 
 - Version 1.0.1:
 
