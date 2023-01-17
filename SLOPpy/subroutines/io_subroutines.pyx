@@ -247,18 +247,19 @@ def get_filelists(night_selected):
         NOT on the archive directory: in this way it is possible to try different
         combinations of nights and files without making a mess in the archive """
 
-    files_list = np.genfromtxt(night_selected['all'], dtype=str)
+    files_list = np.atleast_1d(np.genfromtxt(night_selected['all'], dtype=str))
+
     try:
-        files_transit_out = np.genfromtxt(night_selected['out_transit'], dtype=str)
-        files_transit_in = np.genfromtxt(night_selected['in_transit'], dtype=str)
-        files_transit_full = np.genfromtxt(night_selected['full_transit'], dtype=str)
+        files_transit_out = np.atleast_1d(np.genfromtxt(night_selected['out_transit'], dtype=str))
+        files_transit_in = np.atleast_1d(np.genfromtxt(night_selected['in_transit'], dtype=str))
+        files_transit_full = np.atleast_1d(np.genfromtxt(night_selected['full_transit'], dtype=str))
     except (FileNotFoundError, IOError):
         files_transit_out = None
         files_transit_in = None
         files_transit_full = None
 
     try:
-        files_telluric = np.genfromtxt(night_selected['telluric_list'], dtype=str)
+        files_telluric = np.atleast_1d(np.genfromtxt(night_selected['telluric_list'], dtype=str))
     except (FileNotFoundError, IOError):
         files_telluric = None
 
