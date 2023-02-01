@@ -555,7 +555,7 @@ def _get_observational_parameters(observations_A, lists_dict, night_dict_key, in
         """
 
         """ Slight modification of the RV shift to minimize the rebinning error at the wings of the spectra
-        BRF = Solar System Barycentric Reference fFrame
+        BRF = Solar System Barycentric Reference frame
             rv_shift_ORF2BRF = rv_shift_ORF2SRF_mod + rv_shift_ORF2SRF_res
         """
         observational_parameters[obs]['rv_shift_ORF2BRF'] = \
