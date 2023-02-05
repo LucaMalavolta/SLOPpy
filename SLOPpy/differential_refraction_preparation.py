@@ -130,7 +130,20 @@ def compute_differential_refraction_preparation(config_in, append_name=None):
             #                      observational_pams['wavelength_rescaling'])
             #
 
-            """ Zero or negative values are identified, flagged and substituted with another value """
+            """ Zero or negative values are identified, flagged and substituted
+            with another value """
+            
+            import matplotlib.pyplot as plt 
+            print(obs)
+            plt.plot(input_data[obs]['wave'], input_data[obs]['step'])
+
+            plt.plot(preparation['coadd']['wave'], preparation['coadd']['step'])
+            plt.show()
+            plt.plot(input_data[obs]['wave'], input_data[obs]['e2ds'])
+            plt.plot(preparation['coadd']['wave'], preparation[obs]['flux_rebinned_stellarRF'])
+            plt.show()
+            quit()
+            
             preparation[obs]['flux_rebinned_stellarRF'], \
             err_flux_rebinned_SRF, \
             flux_rebinned_SRF_null = \

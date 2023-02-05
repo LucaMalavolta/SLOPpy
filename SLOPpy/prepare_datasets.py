@@ -205,7 +205,9 @@ def prepare_datasets(config_in):
                 average value
             - if in relevant number, we assume that the their median value
                 corresponds to the noise floor
-            - we add the noise floor to the error estimate
+            - we add the noise floor to the error estimate (I KNOW it should be
+              in quadrature, but we are dealing with useless messy points so 
+              we can safely enlarge the error estimate...)
             """
 
             observations_A[obs]['null'] = (observations_A[obs]['e2ds'] <= 0.0)
@@ -215,7 +217,7 @@ def prepare_datasets(config_in):
             else:
                 observations_A[obs]['noise_floor'] = 1.
 
-            observations_A[obs]['e2ds_err'] = np.sqrt(np.abs(observations_A[obs]['e2ds'])) + observations_A[obs]['noise_floor']
+            observations_A[obs]['e2ds_err'] += observations_A[obs]['noise_floor']
             #observations_A[obs]['e2ds_err'] = np.sqrt(observations_A[obs]['e2ds'])
 
             if 'n_orders' not in observations_A or 'n_pixels' not in observations_A:
