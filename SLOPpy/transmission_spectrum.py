@@ -260,6 +260,8 @@ def compute_transmission_spectrum(config_in, lines_label, reference='planetRF', 
                                     preserve_flux=False,
                                     is_error=True)
                 else:
+                    preserve_flux = input_data[obs].get('absolute_flux', True)
+
                     transmission[obs]['rebinned'] = \
                         rebin_2d_to_1d(input_data[obs]['wave'],
                                     input_data[obs]['step'],
@@ -267,6 +269,7 @@ def compute_transmission_spectrum(config_in, lines_label, reference='planetRF', 
                                     calib_data['blaze'],
                                     transmission['wave'],
                                     transmission['step'],
+                                    preserve_flux=preserve_flux,
                                     rv_shift=rv_shift)
 
                     transmission[obs]['rebinned_err'] = \
@@ -276,8 +279,31 @@ def compute_transmission_spectrum(config_in, lines_label, reference='planetRF', 
                                     calib_data['blaze'],
                                     transmission['wave'],
                                     transmission['step'],
+                                    preserve_flux=preserve_flux,
                                     rv_shift=rv_shift,
                                     is_error=True)
+
+                    ### Small border bugfix
+                    if transmission[obs]['rebinned_err'][0] ==0:
+                        transmission[obs]['rebinned'][0] = transmission[obs]['rebinned'][1]
+                        transmission[obs]['rebinned_err'][0] = transmission[obs]['rebinned_err'][1]
+
+                    if transmission[obs]['rebinned_err'][-1] ==0:
+
+                        transmission[obs]['rebinned'][-1] = transmission[obs]['rebinned'][-2]
+                        transmission[obs]['rebinned_err'][-1] = transmission[obs]['rebinned_err'][-2]
+
+
+                    #import matplotlib.pyplot as plt
+                    #plt.scatter(transmission['wave'], transmission[obs]['corrected'])
+                    #plt.plot(transmission['wave'], transmission[obs]['continuum'])
+                    #plt.scatter(transmission['wave'][selection], transmission[obs]['corrected'][selection], c='r')
+                    #plt.plot(input_data[obs]['wave'][0,:], preparation[obs]['ratio_err'][0,:])
+                    #plt.scatter(transmission['wave'], transmission[obs]['rebinned_err'], c='b')
+                    #plt.axhline(0.0000, c='C2')
+
+                    #plt.show()
+                    #quit()
 
                 #import matplotlib.pyplot as plt
                 #plt.scatter(input_data[obs]['wave'], preparation[obs]['ratio'], s=2)
@@ -384,7 +410,10 @@ def compute_transmission_spectrum(config_in, lines_label, reference='planetRF', 
                     #plt.scatter(transmission['wave'], transmission[obs]['corrected'])
                     #plt.plot(transmission['wave'], transmission[obs]['continuum'])
                     #plt.scatter(transmission['wave'][selection], transmission[obs]['corrected'][selection], c='r')
-                    # plt.show()
+                    #plt.scatter(transmission['wave'], transmission[obs]['corrected_err']+0.05, c='b')
+                    #plt.scatter(transmission['wave'], transmission[obs]['normalized_err'], c='r')
+                    #plt.show()
+                    #quit()
 
                     transmission[obs]['continuum_uncorrected_coeff'] = \
                         np.polynomial.chebyshev.chebfit(transmission['wave'][selection],
@@ -566,7 +595,7 @@ def plot_transmission_spectrum(config_in, lines_label, night_input='', results_i
                 transmission = load_from_cpickle(filename_rad, config_in['output'], night, lines_label, it_string)
             except (FileNotFoundError, IOError):
                 print()
-                print("No transmission spectrum in {0:s} , no plots".format(reference))
+                print("No transmission spectrum in {0:s}, no plots".format(reference))
                 continue
 
             """ Creation of the color array, based on the BJD of the observations

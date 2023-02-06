@@ -72,6 +72,8 @@ def compute_master_out(config_in):
                 input_data[obs]['wave'], input_data[obs]['e2ds'], input_data[obs]['e2ds_err'],
                 observational_pams['wavelength_rescaling'])
 
+            preserve_flux = input_data[obs].get('absolute_flux', True)
+
             processed[obs]['rebinned'] = \
                 rebin_2d_to_1d(input_data[obs]['wave'],
                                input_data[obs]['step'],
@@ -79,6 +81,7 @@ def compute_master_out(config_in):
                                calib_data['blaze'],
                                master_out['wave'],
                                master_out['step'],
+                               preserve_flux=preserve_flux,
                                rv_shift=observational_pams[obs]['rv_shift_ORF2SRF_mod'])
 
             processed[obs]['rebinned_err'] = \
@@ -88,6 +91,7 @@ def compute_master_out(config_in):
                                calib_data['blaze'],
                                master_out['wave'],
                                master_out['step'],
+                               preserve_flux=preserve_flux,
                                rv_shift=observational_pams[obs]['rv_shift_ORF2SRF_mod'])
 
             master_out['total_flux'] += processed[obs]['rebinned']

@@ -114,6 +114,8 @@ def compute_telluric_molecfit(config_in):
                                   input_data[obs]['e2ds_err'],
                                   observational_pams['wavelength_rescaling'])
 
+            preserve_flux = input_data[obs].get('absolute_flux', True)
+
             processed[obs]['rebin_ORF'] = \
             rebin_2d_to_1d(input_data[obs]['wave'],
                            input_data[obs]['step'],
@@ -121,6 +123,7 @@ def compute_telluric_molecfit(config_in):
                            calib_data['blaze'],
                            processed['rebin']['wave'],
                            processed['rebin']['step'],
+                               preserve_flux=preserve_flux,
                            rv_shift=0.00)
 
             """ Molecfit analysis is skipped if the telluric computation has been computed already"""
@@ -143,6 +146,7 @@ def compute_telluric_molecfit(config_in):
                            calib_data['blaze'],
                            processed['rebin']['wave'],
                            processed['rebin']['step'],
+                               preserve_flux=preserve_flux,
                            rv_shift = observational_pams[obs]['rv_shift_ORF2SRF'])
 
             fileout = open('./molecfit_'+night +'/'+obs+'_SRF_s1d.dat','w')

@@ -62,16 +62,19 @@ def check_differential_refraction(config_in):
 
             #processed[obs]['flux'] = input_data[obs]['e2ds']/calib_data['blaze']/input_data[obs]['step']
             #processed[obs]['flux_err'] = np.sqrt(input_data[obs]['e2ds'])/calib_data['blaze']/input_data[obs]['step']
+            preserve_flux = input_data[obs].get('absolute_flux', True)
 
             processed[obs]['flux_s1d'] = \
                 rebin_2d_to_1d(input_data[obs]['wave'], input_data[obs]['step'], input_data[obs]['e2ds'],
                                calib_data['blaze'], input_data['coadd']['wave'], input_data['coadd']['step'],
+                               preserve_flux=preserve_flux,
                                rv_shift=observational_pams[obs]['rv_shift_ORF2BRF'])
 
             """
             processed[obs]['flux_s1d_err'] = \
                 rebin_2d_to_1d(input_data[obs]['wave'], input_data[obs]['step'],  input_data[obs]['e2ds_err'],
                                calib_data['blaze'], input_data['coadd']['wave'], input_data['coadd']['step'],
+                               preserve_flux=preserve_flux,
                                rv_shift=0.00, is_error=True)
             """
             processed[obs]['flux_s1d_err'] = processed[obs]['flux_s1d']
@@ -99,6 +102,7 @@ def check_differential_refraction(config_in):
                                calib_data['blaze'],
                                input_data_corrected['coadd']['wave'],
                                input_data_corrected['coadd']['step'],
+                               preserve_flux=preserve_flux,
                                rv_shift=observational_pams[obs]['rv_shift_ORF2BRF'])
 
             """  
@@ -109,6 +113,7 @@ def check_differential_refraction(config_in):
                                calib_data['blaze'],
                                input_data_corrected['coadd']['wave'],
                                input_data_corrected['coadd']['step'],
+                               preserve_flux=preserve_flux,
                                rv_shift=0.00,
                                is_error=True)
             """
@@ -388,24 +393,30 @@ def write_differential_refraction(config_in):
 
             processed = dict(n_orders=input_data[obs]['n_orders'], n_pixels=input_data[obs]['n_pixels'])
 
+            preserve_flux = input_data[obs].get('absolute_flux', True)
+
             processed['flux_s1d_BRF_corr'] = \
                 rebin_2d_to_1d(input_data[obs]['wave'], input_data[obs]['step'],input_data[obs]['e2ds'],
                                calib_data['blaze'], input_data['coadd']['wave'], input_data['coadd']['step'],
+                               preserve_flux=preserve_flux,
                                rv_shift=observational_pams[obs]['rv_shift_ORF2BRF'])
 
             processed['flux_s1d_BRF_corr_err'] = \
                 rebin_2d_to_1d(input_data[obs]['wave'], input_data[obs]['step'],input_data[obs]['e2ds_err'],
                                calib_data['blaze'], input_data['coadd']['wave'], input_data['coadd']['step'],
+                               preserve_flux=preserve_flux,
                                rv_shift=observational_pams[obs]['rv_shift_ORF2BRF'], is_error=True)
 
             processed['flux_s1d_SRF_corr'] = \
                 rebin_2d_to_1d(input_data[obs]['wave'], input_data[obs]['step'],input_data[obs]['e2ds'],
                                calib_data['blaze'], input_data['coadd']['wave'], input_data['coadd']['step'],
+                               preserve_flux=preserve_flux,
                                rv_shift=observational_pams[obs]['rv_shift_ORF2SRF'])
 
             processed['flux_s1d_SRF_corr_err'] = \
                 rebin_2d_to_1d(input_data[obs]['wave'], input_data[obs]['step'],input_data[obs]['e2ds_err'],
                                calib_data['blaze'], input_data['coadd']['wave'], input_data['coadd']['step'],
+                               preserve_flux=preserve_flux,
                                rv_shift=observational_pams[obs]['rv_shift_ORF2SRF'], is_error=True)
 
 

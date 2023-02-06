@@ -154,6 +154,8 @@ def compute_spectra_lightcurve(config_in, lines_label):
                 input_data[obs]['wave'], input_data[obs]['e2ds'], input_data[obs]['e2ds_err'],
                 observational_pams['wavelength_rescaling'])
 
+            preserve_flux = input_data[obs].get('absolute_flux', True)
+
             processed[obs]['uncorrected'] = \
                 rebin_2d_to_1d(input_data[obs]['wave'],
                                input_data[obs]['step'],
@@ -161,6 +163,7 @@ def compute_spectra_lightcurve(config_in, lines_label):
                                calib_data['blaze'],
                                processed['wave'],
                                processed['step'],
+                               preserve_flux=preserve_flux,
                                rv_shift=observational_pams[obs]['rv_shift_ORF2SRF'])
 
             processed[obs]['uncorrected_err'] = \
@@ -170,6 +173,7 @@ def compute_spectra_lightcurve(config_in, lines_label):
                                calib_data['blaze'],
                                processed['wave'],
                                processed['step'],
+                               preserve_flux=preserve_flux,
                                rv_shift=observational_pams[obs]['rv_shift_ORF2SRF'])
 
             if clv_rm_correction:

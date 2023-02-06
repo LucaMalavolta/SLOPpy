@@ -57,7 +57,7 @@ def PEPSI_get_calib_data(archive, file_rad, fiber='A', order_selection=None):
     # Blaze file - if only blaze-corrected files are available, set it equal to 1.
     calib_dict['n_pixels'] = len(data_fits)
     calib_dict['n_orders'] = 1
-    
+
     calib_dict['blaze'] = np.ones((calib_dict['n_orders'], calib_dict['n_pixels']))
 
 
@@ -65,6 +65,12 @@ def PEPSI_get_calib_data(archive, file_rad, fiber='A', order_selection=None):
 
 
 def PEPSI_get_input_data(archive, file_rad, mask, fiber='A', skip_ccf=None, skip_s1d=True, order_selection=None):
+    """_summary_
+
+    Returns:
+        _type_: _description_
+    """
+
     """ PEPSI delivers calibrated, rebinned spectra only in a specific format
         so many entry in the dictionary will be empty.
         Given the simplicity of the format, this subroutines can be used as
@@ -96,10 +102,10 @@ def PEPSI_get_input_data(archive, file_rad, mask, fiber='A', skip_ccf=None, skip
     #input_dict['DPR_TYPE'] = ?? 
 
     input_dict['BERV'] = pepsi_fits[0].header['SSBVEL'] / 1000. # in km/s
-    input_dict['RVC'] = pepsi_fits[0].header['RADVEL'] / 1000. 
+    input_dict['RVC'] = pepsi_fits[0].header['RADVEL'] / 1000.
     # RV of the star, it must be provided but it can be bypassed
 
-    
+
     input_dict['EXPTIME'] = pepsi_fits[0].header['EXPTIME']
 
     # BJD provided at midexposure ,no need to check for it
@@ -124,9 +130,6 @@ def PEPSI_get_input_data(archive, file_rad, mask, fiber='A', skip_ccf=None, skip
     skycoords = c = SkyCoord(pepsi_fits[0].header['RA'], pepsi_fits[0].header['DEC'], unit=(u.hourangle, u.deg))
     input_dict['RA'] = c.ra.degree
     input_dict['DEC'] = c.dec.degree
-    
-
-    
 
     # Not sure if thes evalies are required, it may be possible
     #input_dict['BLAZE_file'] = None
@@ -136,7 +139,7 @@ def PEPSI_get_input_data(archive, file_rad, mask, fiber='A', skip_ccf=None, skip
     # getting data
 
     """
-    NOTE: PEPSI provides 1D spectra in the stellar reference frame, 
+    NOTE: PEPSI provides 1D spectra in the stellar reference frame,
     but SLOPpy requires 2D spectra (order by order) in the observer reference
     frame. Thus:
     1) we shift the wavelength from the stellar to the observer reference frame
@@ -155,11 +158,27 @@ def PEPSI_get_input_data(archive, file_rad, mask, fiber='A', skip_ccf=None, skip
     input_dict['e2ds'] = np.reshape(pepsi_fits[1].data['Fun'], (1, input_dict['wave_size']))
     input_dict['e2ds_err'] = np.reshape(pepsi_fits[1].data['Var'], (1, input_dict['wave_size']))
 
-    input_dict['step'] = np.zeros_like(input_dict['wave'])
-    input_dict['step'][0,1:] = input_dict['wave'][0,1:] - input_dict['wave'][0,:-1]
-    input_dict['step'][0,0] = input_dict['step'][0,1]
+    """ PEPSI spectra are normalized to unity, but SLOPpy is expecting to have spectra in absolute counts
+        absolute counts mean that a larger step size will have a larger number of counts given the same
+        flux density at a specific wavelength.
+        PEPSI spectra have been resampled on a non-linear scale and than normalized, so not taking into account
+        the bin (or step) size would introduce a deformation during the rebinning phase
+        After several tests, I am forced to introduce a flag to force non-preservation of flux at every
+        rebinning step across the code
 
-    input_dict['orders'] = 1
+    """
+    input_dict['absolute_flux'] = False
+
+    input_dict['step'] = np.zeros_like(input_dict['wave'])
+    input_dict['step'][0,1:-1] = (input_dict['wave'][0,2:] - input_dict['wave'][0,:-2])/2.
+    input_dict['step'][0,0] = input_dict['step'][0,1]
+    input_dict['step'][0,-1] = input_dict['step'][0,-2]
+
+    # order selection is always equal the the first - and unique - order
+    input_dict['orders'] = [0]
+
+    input_dict['absolute_flux'] = False
+
 
     pepsi_fits.close()
 

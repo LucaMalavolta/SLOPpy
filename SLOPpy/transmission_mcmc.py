@@ -14,12 +14,12 @@ __all__ = ['compute_transmission_mcmc', 'compute_transmission_mcmc_iterative']
 subroutine_name = 'transmission_mcmc'
 
 
-
 def compute_transmission_mcmc_iterative(config_in, lines_label):
 
     pca_parameters = from_config_get_pca_parameters(config_in)
-    for it in range(0, pca_parameters.get('iterations',5)):
+    for it in range(0, pca_parameters.get('iterations', 5)):
         compute_transmission_mcmc(config_in, lines_label, reference='planetRF', pca_iteration=it)
+
 
 def compute_transmission_mcmc(config_in, lines_label, reference='planetRF', pca_iteration=-1):
 
@@ -42,7 +42,6 @@ def compute_transmission_mcmc(config_in, lines_label, reference='planetRF', pca_
     norm_pams['spectra_poly_degree'] = norm_dict.get('spectra_poly_degree', 2)
     norm_pams['lower_threshold'] = norm_dict.get('lower_threshold', 0.950)
     norm_pams['percentile_selection'] = norm_dict.get('percentile_selection', 10)
-
 
     sampler_pams = lines_dict['sampler_parameters']
     sampler_name = sampler_pams.get('sampler_name', 'emcee')
@@ -282,7 +281,6 @@ def compute_transmission_mcmc(config_in, lines_label, reference='planetRF', pca_
             preparation = preparation_input
             it_string = ''
 
-
         try:
             mcmc_data = load_from_cpickle(subroutine_name + '_data', config_in['output'], night, lines_label, it_string)
 
@@ -309,7 +307,6 @@ def compute_transmission_mcmc(config_in, lines_label, reference='planetRF', pca_
             input_data = retrieve_observations(
                 config_in['output'], night, lists['observations'])
 
-
             if clv_rm_correction:
                 try:
                     clv_rm_models = load_from_cpickle(
@@ -327,7 +324,6 @@ def compute_transmission_mcmc(config_in, lines_label, reference='planetRF', pca_
             processed = {
                 'subroutine': subroutine_name,
             }
-
 
             """
             we use the first transit_full observation to define the boolean
@@ -354,7 +350,7 @@ def compute_transmission_mcmc(config_in, lines_label, reference='planetRF', pca_
             """
 
             identify_order = (wave_SRF > processed['common']['range'][0]) \
-                 & (wave_SRF < processed['common']['range'][1])
+                & (wave_SRF < processed['common']['range'][1])
             order_selection = (np.sum(identify_order, axis=1) > 0)
             order_list = np.arange(0, observational_pams['n_orders'], dtype=np.int16)[order_selection]
             n_orders = len(order_list)
@@ -378,7 +374,7 @@ def compute_transmission_mcmc(config_in, lines_label, reference='planetRF', pca_
             }
 
             identify_order = (wave_SRF > processed['common_extended']['range'][0]) \
-                 & (wave_SRF < processed['common_extended']['range'][1])
+                & (wave_SRF < processed['common_extended']['range'][1])
             order_selection = (np.sum(identify_order, axis=1) > 0)
             order_list = np.arange(0, observational_pams['n_orders'], dtype=np.int16)[order_selection]
             n_orders = len(order_list)
@@ -412,7 +408,7 @@ def compute_transmission_mcmc(config_in, lines_label, reference='planetRF', pca_
             for line_key, line_val in lines_dict['lines'].items():
                 line_extension = 1.2 * \
                     planet_dict['RV_semiamplitude'][0] * \
-                        line_val / speed_of_light_km
+                    line_val / speed_of_light_km
                 processed['common_extended']['line_exclusion'] = processed['common_extended']['line_exclusion'] \
                     & (np.abs(processed['common_extended']['reference_wave']-line_val) > line_extension)
 
@@ -425,19 +421,19 @@ def compute_transmission_mcmc(config_in, lines_label, reference='planetRF', pca_
 
                 for order in processed['common_extended']['order_list']:
                     print('ORDER', order)
-                    order_sel = processed['common_extended']['selection'][order,:]
+                    order_sel = processed['common_extended']['selection'][order, :]
                     print('selection', np.shape(processed['common_extended']['selection']))
                     print('ORDER_SEL', np.shape(order_sel))
                     stellar_spectrum_rebinned = rebin_1d_to_1d(clv_rm_models['common']['wave'],
-                                        clv_rm_models['common']['step'],
-                                        clv_rm_models['common']['norm_convolved'],
-                                        processed['common_extended']['reference_wave'][order,order_sel],
-                                        processed['common_extended']['reference_step'][order,order_sel])
+                                                               clv_rm_models['common']['step'],
+                                                               clv_rm_models['common']['norm_convolved'],
+                                                               processed['common_extended']['reference_wave'][order, order_sel],
+                                                               processed['common_extended']['reference_step'][order, order_sel])
 
                     stellar_spectrum_derivative = first_derivative(
-                        processed['common_extended']['reference_wave'][order,order_sel], stellar_spectrum_rebinned)
+                        processed['common_extended']['reference_wave'][order, order_sel], stellar_spectrum_rebinned)
 
-                    processed['common_extended']['line_exclusion'][order,order_sel] = processed['common_extended']['line_exclusion'][order,order_sel] & (
+                    processed['common_extended']['line_exclusion'][order, order_sel] = processed['common_extended']['line_exclusion'][order, order_sel] & (
                         np.abs(stellar_spectrum_derivative) < 0.0005)
             except KeyError:
                 print(
@@ -465,6 +461,8 @@ def compute_transmission_mcmc(config_in, lines_label, reference='planetRF', pca_
                     observational_pams[obs]['rv_shift_ORF2SRF'])
 
                 """
+                preserve_flux = input_data[obs].get('absolute_flux', True)
+
                 processed[obs]['rebinned'] = \
                     rebin_2d_to_1d(input_data[obs]['wave'],
                                    input_data[obs]['step'],
@@ -472,6 +470,7 @@ def compute_transmission_mcmc(config_in, lines_label, reference='planetRF', pca_
                                    calib_data['blaze'],
                                    processed['common']['wave'],
                                    processed['common']['step'],
+                                   preserve_flux=preserve_flux,
                                    rv_shift=observational_pams[obs]['rv_shift_ORF2SRF'])
                 processed[obs]['rebinned_err'] = \
                     rebin_2d_to_1d(input_data[obs]['wave'],
@@ -480,6 +479,7 @@ def compute_transmission_mcmc(config_in, lines_label, reference='planetRF', pca_
                                    calib_data['blaze'],
                                    processed['common']['wave'],
                                    processed['common']['step'],
+                                   preserve_flux=preserve_flux,
                                    rv_shift=observational_pams[obs]['rv_shift_ORF2SRF'],
                                    is_error=True)
 
@@ -490,6 +490,7 @@ def compute_transmission_mcmc(config_in, lines_label, reference='planetRF', pca_
                                    calib_data['blaze'],
                                    processed['common_extended']['wave'],
                                    processed['common_extended']['step'],
+                                   preserve_flux=preserve_flux,
                                    rv_shift=observational_pams[obs]['rv_shift_ORF2SRF'])
                 """
 
@@ -505,17 +506,9 @@ def compute_transmission_mcmc(config_in, lines_label, reference='planetRF', pca_
                     where we actually have data for the MCMC
                 """
 
-
                 """ TODO 
                     Something seems wrang here, ratio spectra are not used...
                 """
-
-
-
-
-
-
-
 
                 for order in processed['common']['order_list']:
 
@@ -524,7 +517,8 @@ def compute_transmission_mcmc(config_in, lines_label, reference='planetRF', pca_
                         > np.std(preparation[obs]['deblazed'][order, :]))
 
                     if np.sum(selection) < 100:
-                        selection =  ( preparation[obs]['deblazed'][order, :]  > np.std(preparation[obs]['deblazed'][order, :]))
+                        selection = (preparation[obs]['deblazed'][order, :] >
+                                     np.std(preparation[obs]['deblazed'][order, :]))
 
                     processed[obs]['norm_coeff_' + repr(order)] = \
                         np.polynomial.chebyshev.chebfit(processed[obs]['wave_SRF'][order, selection],
@@ -550,20 +544,19 @@ def compute_transmission_mcmc(config_in, lines_label, reference='planetRF', pca_
                 3) planet_RVsinusoid: Fractional RV of the planet (K=1) - from a array
             """
             clv_rm_grid = np.ones([processed['common']['n_radius_grid'],
-                                    processed['common']['n_obs'],
-                                    processed['common']['size']],
-                                   dtype=np.double)
+                                   processed['common']['n_obs'],
+                                   processed['common']['size']],
+                                  dtype=np.double)
 
             time_from_transit = np.empty(
                 processed['common']['n_obs'], dtype=np.double)
 
-
             wave_array = np.empty([processed['common']['n_obs'],
-                                          processed['common']['size']],
-                                         dtype=np.double)
+                                   processed['common']['size']],
+                                  dtype=np.double)
             time_array = np.empty([processed['common']['n_obs'],
-                                          processed['common']['size']],
-                                         dtype=np.double)
+                                   processed['common']['size']],
+                                  dtype=np.double)
             transmission_spec = np.empty([processed['common']['n_obs'],
                                           processed['common']['size']],
                                          dtype=np.double)
@@ -588,23 +581,20 @@ def compute_transmission_mcmc(config_in, lines_label, reference='planetRF', pca_
 
                 for i_r in range(0, processed['common']['n_radius_grid']):
 
-
                     clv_rm_temp = processed['common_extended']['reference_wave'] * 0.
                     for order in processed['common']['order_list']:
-
 
                         """ CLV Synthetic models are in the Stellar Reference system,
                         so no shift is required """
                         clv_rm_temp[order, :] = rebin_1d_to_1d(
                             clv_rm_models['common']['wave'],
-                                       clv_rm_models['common']['step'],
-                                       clv_rm_models[obs]['clv_rm_model_convolved_normalized'][i_r, :],
-                                       processed[obs]['wave_SRF'][order, :],
-                                       processed[obs]['step_SRF'][order, :],
-                                       preserve_flux=False)
+                            clv_rm_models['common']['step'],
+                            clv_rm_models[obs]['clv_rm_model_convolved_normalized'][i_r, :],
+                            processed[obs]['wave_SRF'][order, :],
+                            processed[obs]['step_SRF'][order, :],
+                            preserve_flux=False)
 
                     clv_rm_grid[i_r, i_obs, :] = clv_rm_temp[processed['common']['selection']].flatten()
-
 
                     # preserve_flux should be True or False?
                     # False if the spectra are already normalized
@@ -651,7 +641,8 @@ def compute_transmission_mcmc(config_in, lines_label, reference='planetRF', pca_
         print("transmission_mcmc           ")
 
         try:
-            results_dict = load_from_cpickle(subroutine_name+'_'+sampler_name+'_results', config_in['output'], night, lines_label, it_string)
+            results_dict = load_from_cpickle(subroutine_name+'_'+sampler_name+'_results',
+                                             config_in['output'], night, lines_label, it_string)
             print("   Transmission MCMC analysis for lines {0:s}, night: {1:s}  already performed".format(
                 lines_label, night))
 
@@ -665,20 +656,17 @@ def compute_transmission_mcmc(config_in, lines_label, reference='planetRF', pca_
 
             for key, val in pams_dict.items():
                 print('{0:24s}  {1:4d}  {2:12f}   {3:12f}  {4:12f} (15-84 p) ([{5:9f}, {6:9f}]) (start: {7:9f})'.format(key, val,
-                                                                                                        chain_med[val,0],
-                                                                                                        chain_med[val,2],
-                                                                                                        chain_med[val,1],
-                                                                                                        boundaries[val, 0],
-                                                                                                        boundaries[val, 1],
-                                                                                                        start_average[val])
-                                                                                                        )
-
+                                                                                                                        chain_med[val, 0],
+                                                                                                                        chain_med[val, 2],
+                                                                                                                        chain_med[val, 1],
+                                                                                                                        boundaries[val, 0],
+                                                                                                                        boundaries[val, 1],
+                                                                                                                        start_average[val])
+                      )
 
             continue
 
-
             # R(h) = np.sqrt(1+h/delta)
-
 
         except FileNotFoundError:
             print()
@@ -698,7 +686,6 @@ def compute_transmission_mcmc(config_in, lines_label, reference='planetRF', pca_
         if pams_dict.get('rp_factor', False):
             pam_id = pams_dict['rp_factor']
             boundaries[pam_id, :] = [clv_rm_radius[0], clv_rm_radius[-1]]
-
 
         print()
         print('      PyDE + emcee parameters')
@@ -838,7 +825,6 @@ def compute_transmission_mcmc(config_in, lines_label, reference='planetRF', pca_
                 * (observational_pams[obs]['BJD'] - observational_pams['time_of_transit']) \
                 / planet_dict['period'][0] * 2 * np.pi
 
-
         save_to_cpickle(subroutine_name+'_'+sampler_name+'_results',
                         results_dict, config_in['output'], night, lines_label, it_string)
 
@@ -847,11 +833,11 @@ def compute_transmission_mcmc(config_in, lines_label, reference='planetRF', pca_
 
         for key, val in pams_dict.items():
             print('{0:24s}  {1:4d}  {2:12f}   {3:12f}  {4:12f} (15-84 p) ([{5:9f}, {6:9f}])'.format(key, val,
-                                                                                                    chain_med[val,0],
-                                                                                                    chain_med[val,2],
-                                                                                                    chain_med[val,1],
+                                                                                                    chain_med[val, 0],
+                                                                                                    chain_med[val, 2],
+                                                                                                    chain_med[val, 1],
                                                                                                     boundaries[val, 0], boundaries[val, 1])
-                                                                                                    )
+                  )
         # print('   *** physical output')
         #
         #        results_dict['results'] = {
@@ -867,7 +853,8 @@ def compute_transmission_mcmc(config_in, lines_label, reference='planetRF', pca_
 
     print()
     try:
-        all_mcmc_data = load_from_cpickle(subroutine_name+'_data', config_in['output'], night='', lines=lines_label, it_string=it_string)
+        all_mcmc_data = load_from_cpickle(
+            subroutine_name+'_data', config_in['output'], night='', lines=lines_label, it_string=it_string)
 
         all_clv_rm_radius = all_mcmc_data['clv_rm_radius']
         all_clv_rm_grid = all_mcmc_data['clv_rm_grid']
@@ -888,7 +875,8 @@ def compute_transmission_mcmc(config_in, lines_label, reference='planetRF', pca_
 
         for night in night_dict:
 
-            mcmc_data = load_from_cpickle(subroutine_name+'_data', config_in['output'], night, lines_label, it_string=it_string)
+            mcmc_data = load_from_cpickle(subroutine_name+'_data',
+                                          config_in['output'], night, lines_label, it_string=it_string)
 
             try:
                 # Building the arrays for the full analysis
@@ -953,10 +941,10 @@ def compute_transmission_mcmc(config_in, lines_label, reference='planetRF', pca_
                         config_in['output'], night='', lines=lines_label, it_string=it_string)
 
     try:
-        results_dict = load_from_cpickle(subroutine_name+ '_'+ sampler_name+'_results',
+        results_dict = load_from_cpickle(subroutine_name + '_' + sampler_name+'_results',
                                          config_in['output'], night='', lines=lines_label, it_string=it_string)
         print("   Transmission MCMC analysis for lines {0:s} already performed ".format(
-                lines_label))
+            lines_label))
 
         pams_dict = results_dict['pams_dict']
         chain_med = results_dict['chain_med']
@@ -967,12 +955,11 @@ def compute_transmission_mcmc(config_in, lines_label, reference='planetRF', pca_
 
         for key, val in pams_dict.items():
             print('{0:24s}  {1:4d}  {2:12f}   {3:12f}  {4:12f} (15-84 p) ([{5:9f}, {6:9f}])'.format(key, val,
-                                                                                                    chain_med[val,0],
-                                                                                                    chain_med[val,2],
-                                                                                                    chain_med[val,1],
+                                                                                                    chain_med[val, 0],
+                                                                                                    chain_med[val, 2],
+                                                                                                    chain_med[val, 1],
                                                                                                     boundaries[val, 0], boundaries[val, 1])
-                                                                                                    )
-
+                  )
 
     except FileNotFoundError:
 
@@ -1069,7 +1056,6 @@ def compute_transmission_mcmc(config_in, lines_label, reference='planetRF', pca_
             'jitter': med_jitter
         }
 
-
         results_dict['results_MAP'] = {
             'lines_model': map_lines_model,
             'clv_model': map_clv_model,
@@ -1132,16 +1118,16 @@ def compute_transmission_mcmc(config_in, lines_label, reference='planetRF', pca_
                     * (observational_pams[obs]['BJD'] - observational_pams['time_of_transit']) \
                     / planet_dict['period'][0] * 2 * np.pi
 
-        save_to_cpickle(subroutine_name +'_'+sampler_name+'_results',
+        save_to_cpickle(subroutine_name + '_'+sampler_name+'_results',
                         results_dict, config_in['output'], night='', lines=lines_label, it_string=it_string)
 
         for key, val in pams_dict.items():
             print('{0:24s}  {1:4d}  {2:12f}   {3:12f}  {4:12f} (15-84 p) ([{5:9f}, {6:9f}])'.format(key, val,
-                                                                                                    chain_med[val,0],
-                                                                                                    chain_med[val,2],
-                                                                                                    chain_med[val,1],
+                                                                                                    chain_med[val, 0],
+                                                                                                    chain_med[val, 2],
+                                                                                                    chain_med[val, 1],
                                                                                                     boundaries[val, 0], boundaries[val, 1])
-                                                                                                    )
+                  )
         print('MCMC completed')
 
     # Update planet parameters
@@ -1161,12 +1147,9 @@ def compute_transmission_mcmc(config_in, lines_label, reference='planetRF', pca_
     #        results_night = load_from_cpickle('transmission_mcmc_'+sampler_name+'_results',
     #                                     config_in['output'], night=night, lines=lines_label)
 
-
     #        lists = load_from_cpickle('lists', config_in['output'], night)
     #        observational_pams = load_from_cpickle(
     #            'observational_pams', config_in['output'], night)
-
-
 
     #        for obs in lists['observations']:
     #
@@ -1201,4 +1184,3 @@ def compute_transmission_mcmc(config_in, lines_label, reference='planetRF', pca_
 
     #        save_to_cpickle('observational', observational_pams,
     #                        config_in['output'], night, lines_label)
-

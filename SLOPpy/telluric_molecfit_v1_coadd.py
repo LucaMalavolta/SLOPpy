@@ -64,7 +64,6 @@ def compute_telluric_molecfit_v1_coadd(config_in):
             'reference_frame': 'observer'
         }
 
-
         processed['airmass_ref'] = 0.000
         processed['telluric'] = {}
         processed['rebin'] = {}
@@ -81,15 +80,14 @@ def compute_telluric_molecfit_v1_coadd(config_in):
                                                dtype=np.double)
 
         processed['rebin']['size'] = np.size(processed['rebin']['wave'])
-        processed['rebin']['step'] = np.ones(processed['rebin']['size'], dtype=np.double) * molecfit_dict['rebinning_step']
+        processed['rebin']['step'] = np.ones(processed['rebin']['size'],
+                                             dtype=np.double) * molecfit_dict['rebinning_step']
 
         processed['rebin'] = {
             'wave': input_data['coadd']['wave'],
             'size': input_data['coadd']['size'],
             'step': input_data['coadd']['step'],
         }
-
-
 
         n_coadd = 0
         n_reference = 0
@@ -112,7 +110,6 @@ def compute_telluric_molecfit_v1_coadd(config_in):
                 'n_pixels': input_data[obs]['n_pixels']
             }
 
-
             """ e2ds spectra are rescaled and then rebinned while keeping them in the Observer Reference Frame"""
 
             processed[obs]['e2ds_rescaling'], processed[obs]['e2ds_rescaled'], processed[obs]['e2ds_rescaled_err'] = \
@@ -121,20 +118,22 @@ def compute_telluric_molecfit_v1_coadd(config_in):
                                   input_data[obs]['e2ds_err'],
                                   observational_pams['wavelength_rescaling'])
 
-            processed[obs]['rebin_ORF'] = \
-            rebin_2d_to_1d(input_data[obs]['wave'],
-                           input_data[obs]['step'],
-                           processed[obs]['e2ds_rescaled'],
-                           calib_data['blaze'],
-                           processed['rebin']['wave'],
-                           processed['rebin']['step'],
-                           rv_shift=0.00)
+            preserve_flux = input_data[obs].get('absolute_flux', True)
 
+            processed[obs]['rebin_ORF'] = \
+                rebin_2d_to_1d(input_data[obs]['wave'],
+                               input_data[obs]['step'],
+                               processed[obs]['e2ds_rescaled'],
+                               calib_data['blaze'],
+                               processed['rebin']['wave'],
+                               processed['rebin']['step'],
+                               preserve_flux=preserve_flux,
+                               rv_shift=0.00)
 
             """ Molecfit analysis is skipped if the telluric correction has been computed already"""
-            ##if os.path.isfile('./molecfit_'+night +'/output/'+obs+'_ORF_s1d_TAC.dat'):
-            ##    print('    molecfit+calctrans results for ' + obs + ' already available')
-            ##    continue
+            # if os.path.isfile('./molecfit_'+night +'/output/'+obs+'_ORF_s1d_TAC.dat'):
+            # print('    molecfit+calctrans results for ' + obs + ' already available')
+            # continue
 
             """ the spectra is saved as an ASCII file in a format suitable for molecfit """
             fileout = open('./' + processed['work_dir'] + '/' + obs + '_ORF_s1d.dat', 'w')
@@ -150,6 +149,7 @@ def compute_telluric_molecfit_v1_coadd(config_in):
                            calib_data['blaze'],
                            processed['rebin']['wave'],
                            processed['rebin']['step'],
+                           preserve_flux=preserve_flux,
                            rv_shift = observational_pams[obs]['rv_shift_ORF2SRF'])
 
             fileout = open('./' + processed['work_dir'] + '/' + obs + '_SRF_s1d.dat','w')
@@ -200,32 +200,31 @@ def compute_telluric_molecfit_v1_coadd(config_in):
 
             bash_script.write('export TMPDIR=$PWD\n')
             bash_script.write('echo  "   " executing calctrans on ' + obs + ' \n')
-            bash_script.write(molecfit_dict['installation_path'] + 'calctrans ' + obs + '.par > ' + obs + '_calctrans.log\n')
+            bash_script.write(molecfit_dict['installation_path'] + 'calctrans ' +
+                              obs + '.par > ' + obs + '_calctrans.log\n')
             bash_script.close()
 
             write_molecfit_v1_par('./' + processed['work_dir'] + '/' + obs + '.par',
-                               obs + '_ORF_s1d.dat',
-                               reference_name,
-                               'include_' + night + '.dat',
-                               input_data[obs]['molecfit'],
-                               input_data[obs])
+                                  obs + '_ORF_s1d.dat',
+                                  reference_name,
+                                  'include_' + night + '.dat',
+                                  input_data[obs]['molecfit'],
+                                  input_data[obs])
 
             if (texp_cumulated >= molecfit_dict['exptime_coadd'] and
-                texp_total-texp_cumulated >= molecfit_dict['exptime_coadd']) \
-                or n_obs == len(lists['observations'])-1:
-
+                    texp_total-texp_cumulated >= molecfit_dict['exptime_coadd']) \
+                    or n_obs == len(lists['observations'])-1:
 
                 coadded_files.close()
                 print('   Coadded spectrum: ', n_reference)
 
-                rebin_coadd /=n_coadd
+                rebin_coadd /= n_coadd
 
                 """ the spectra is saved as an ASCII file in a format suitable for molecfit """
                 fileout = open('./' + processed['work_dir'] + '/' + reference_name + '_ORF_s1d.dat', 'w')
                 for w, f in zip(processed['rebin']['wave'], rebin_coadd):
                     fileout.write('{0:12.6f} {1:12.6f} \n'.format(w, f))
                 fileout.close()
-
 
                 """ Average of the observational parameters """
                 for key in molecfit_pams:
@@ -241,8 +240,10 @@ def compute_telluric_molecfit_v1_coadd(config_in):
                 bash_script.write('export TMPDIR=$PWD\n')
 
                 bash_script.write('echo  "   " executing molecfit+calctrans on ' + reference_name + ' \n')
-                bash_script.write(molecfit_dict['installation_path'] + 'molecfit ' + reference_name + '.par > ' + reference_name + '_molecfit.log\n')
-                bash_script.write(molecfit_dict['installation_path'] + 'calctrans ' + reference_name + '.par > ' + reference_name + '_calctrans.log\n')
+                bash_script.write(molecfit_dict['installation_path'] + 'molecfit ' +
+                                  reference_name + '.par > ' + reference_name + '_molecfit.log\n')
+                bash_script.write(molecfit_dict['installation_path'] + 'calctrans ' +
+                                  reference_name + '.par > ' + reference_name + '_calctrans.log\n')
                 bash_script.close()
 
                 # TODO: cycle with variation in UTC until molecfit exits succesfully
@@ -268,11 +269,11 @@ def compute_telluric_molecfit_v1_coadd(config_in):
                         break
 
                     write_molecfit_v1_par('./' + processed['work_dir'] + '/' + reference_name + '.par',
-                                       reference_name + '_ORF_s1d.dat',
-                                       reference_name,
-                                       'include_' + night + '.dat',
-                                       input_data[obs]['molecfit'],
-                                       molecfit_pams)
+                                          reference_name + '_ORF_s1d.dat',
+                                          reference_name,
+                                          'include_' + night + '.dat',
+                                          input_data[obs]['molecfit'],
+                                          molecfit_pams)
 
                     os.system('cd ' + processed['work_dir'] + '/ && . ./molecfit_exec_' + reference_name + '.source')
 
@@ -294,7 +295,6 @@ def compute_telluric_molecfit_v1_coadd(config_in):
                         print('  molecfit for {0:s} crashed, UTC decreased from {1:6.0f} to {2:6.0f} '.format(
                             reference_name, utc_reference, molecfit_pams['UTC']))
 
-
                 n_coadd = 0
                 n_reference += 1
                 texp_total -= texp_cumulated
@@ -304,7 +304,7 @@ def compute_telluric_molecfit_v1_coadd(config_in):
         Execute molecfit runs on all the coadded spectra
         """
 
-        #for reference_name in coadd_list:
+        # for reference_name in coadd_list:
         #    os.system('cd  molecfit_' + night + '/ && . ./molecfit_exec_' + reference_name + '.source')
         #
         print()
@@ -321,20 +321,20 @@ def compute_telluric_molecfit_v1_coadd(config_in):
         print()
         print('  calctrans completed')
 
-
         for n_obs, obs in enumerate(lists['observations']):
 
             telluric[obs] = {}
 
             """ Loading the telluric spectrum from the output directory of molecfit """
-            telluric_molecfit = np.genfromtxt('./' + processed['work_dir'] + '/output/'+obs+'_ORF_s1d_TAC.dat', usecols=2)
+            telluric_molecfit = np.genfromtxt(
+                './' + processed['work_dir'] + '/output/'+obs+'_ORF_s1d_TAC.dat', usecols=2)
             """ rebinning onto the e2ds wave scale"""
 
             if molecfit_dict.get('fix_telluric', True):
                 print('  fix_telluric applied -  temporary workaround for line at 5885.97 A [ORF]')
                 line_boundaries = [5885.74, 5886.21]
                 sel = (processed['rebin']['wave'] > line_boundaries[0]) \
-                      & (processed['rebin']['wave'] < line_boundaries[1])
+                    & (processed['rebin']['wave'] < line_boundaries[1])
                 tell_cont = np.amax(telluric_molecfit[sel])
 
                 telluric_molecfit[sel] = (telluric_molecfit[sel] - tell_cont) / 2.0 + tell_cont
@@ -357,11 +357,10 @@ def compute_telluric_molecfit_v1_coadd(config_in):
 
             telluric[obs]['airmass'] = input_data[obs]['AIRMASS']
 
-
             " for compatibilty to some plots, even if it doesn't make any sense"
             telluric[obs]['airmass_ref'] = 0.000
             telluric[obs]['spectrum_noairmass'] = np.power(telluric[obs]['spectrum'],
-                                    telluric[obs]['airmass_ref'] - input_data[obs]['AIRMASS'])
+                                                           telluric[obs]['airmass_ref'] - input_data[obs]['AIRMASS'])
             telluric[obs]['null'] = telluric[obs]['spectrum_noairmass'] < 0.001
             telluric[obs]['spectrum_noairmass'][telluric[obs]['null']] = 1.0
             # we just copy the spectrum file, it's it's a model itself
@@ -391,11 +390,11 @@ def plot_telluric_molecfit_v1_coadd(config_in, night_input=''):
 
     for night in night_list:
 
-        #plt.scatter(rescaling_array, computed_std, c='C0', zorder=1)
-        #plt.scatter(sel_factor, sel_stdev, c='C1', zorder=2)
-        #plt.plot(rescaling_array, np.polyval(coeff, rescaling_array))
-        #plt.plot(rescaling_array, 2*rescaling_array*coeff[0] + coeff[1] )
-        #plt.plot()
+        # plt.scatter(rescaling_array, computed_std, c='C0', zorder=1)
+        # plt.scatter(sel_factor, sel_stdev, c='C1', zorder=2)
+        # plt.plot(rescaling_array, np.polyval(coeff, rescaling_array))
+        # plt.plot(rescaling_array, 2*rescaling_array*coeff[0] + coeff[1] )
+        # plt.plot()
 
         print("plot_telluric_template                     Night: ", night)
 
@@ -414,7 +413,6 @@ def plot_telluric_molecfit_v1_coadd(config_in, night_input=''):
 
         input_data = retrieve_observations(config_in['output'], night, lists['observations'], use_telluric=False)
 
-
         colors, cmap, line_colors = make_color_array(lists, observational_pams)
 
         fig = plt.figure(figsize=(12, 6))
@@ -431,25 +429,25 @@ def plot_telluric_molecfit_v1_coadd(config_in, night_input=''):
 
             for order in range(0, processed[obs]['n_orders']):
 
-                if order == 0 and i==0:
+                if order == 0 and i == 0:
                     ax1.plot(input_data[obs]['wave'][order, :],
-                                processed[obs]['e2ds_rescaled'][order, :],
-                                c=color_array, lw=1, alpha=0.5, label='uncorrected')
+                             processed[obs]['e2ds_rescaled'][order, :],
+                             c=color_array, lw=1, alpha=0.5, label='uncorrected')
                     ax1.scatter(input_data[obs]['wave'][order, :],
                                 processed[obs]['e2ds_corrected'][order, :],
                                 s=1, c=np.atleast_2d(color_array), label='corrected')
                 else:
                     ax1.plot(input_data[obs]['wave'][order, :],
-                                processed[obs]['e2ds_rescaled'][order, :],
-                                c=color_array, lw=1, alpha=0.5)
+                             processed[obs]['e2ds_rescaled'][order, :],
+                             c=color_array, lw=1, alpha=0.5)
                     ax1.scatter(input_data[obs]['wave'][order, :],
                                 processed[obs]['e2ds_corrected'][order, :],
                                 s=1, c=np.atleast_2d(color_array))
 
-                #ax1.plot(processed[obs]['wave'][order, :],
+                # ax1.plot(processed[obs]['wave'][order, :],
                 #            e2ds_rescaled[order, :]+lift_spectrum,
                 #            c=color_array, lw=1, alpha=0.5)
-                #ax1.scatter(processed[obs]['wave'][order, :],
+                # ax1.scatter(processed[obs]['wave'][order, :],
                 #            e2ds_rescaled_corrected_spline[order, :]+lift_spectrum,
                 #            s=1, c=np.atleast_2d(color_array))
 
@@ -458,13 +456,13 @@ def plot_telluric_molecfit_v1_coadd(config_in, night_input=''):
                          c=color_array)
                 ax2.axhline(1.00, c='k')
 
-                #ax2.plot(processed[obs]['wave'][order, :],
+                # ax2.plot(processed[obs]['wave'][order, :],
                 #         telluric[obs]['spline'][order, :]+lift_spectrum,
                 #         c=color_array)
-                #ax2.axhline(1.00+lift_spectrum, c='k')
+                # ax2.axhline(1.00+lift_spectrum, c='k')
 
-        #ax2.plot(input_data['coadd']['wave'],telluric['stellarRF']['spline_eval']+0.1,c='k')
-        #ax2.scatter(input_data['coadd']['wave'],telluric['stellarRF']['spectrum']+0.1,c='r', s=2)
+        # ax2.plot(input_data['coadd']['wave'],telluric['stellarRF']['spline_eval']+0.1,c='k')
+        # ax2.scatter(input_data['coadd']['wave'],telluric['stellarRF']['spectrum']+0.1,c='r', s=2)
 
         ax1.legend(loc=3)
         ax1.set_title('Night: ' + night)
@@ -475,7 +473,7 @@ def plot_telluric_molecfit_v1_coadd(config_in, night_input=''):
             instrument = night_dict[night]['instrument']
             comparison_file = config_in['instruments'][instrument]['telluric_comparison']
             comparison_data = np.genfromtxt(comparison_file, skip_header=1)
-            if comparison_data[0,0]<1000.0:
+            if comparison_data[0, 0] < 1000.0:
                 nm2Ang = 10.
             else:
                 nm2Ang = 1.

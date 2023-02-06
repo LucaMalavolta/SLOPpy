@@ -443,11 +443,8 @@ def compute_transmission_binned_mcmc(config_in, lines_label, reference='planetRF
                     preserve_flux = False
                     blaze = np.ones_like(calib_data['blaze'])
                 else:
-                    preserve_flux = True
+                    preserve_flux = input_data[obs].get('absolute_flux', True)
                     blaze = calib_data['blaze']
-
-
-
 
                 processed[obs] = {}
                 processed[obs]['rebinned'] = \
