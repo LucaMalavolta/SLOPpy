@@ -321,14 +321,11 @@ def compute_clv_rm_models(config_in):
 
             if n_oversampling % 2 == 0:
                 n_oversampling += 1
-            delta_step = observational_pams[obs]['EXPTIME'] / \
-                n_oversampling / 86400.
+            half_time = observational_pams[obs]['EXPTIME'] / 2 / 86400.
 
-            processed[obs]['bjd_oversampling'] = np.linspace(observational_pams[obs]['BJD'] - delta_step,
-                                                             observational_pams[obs]['BJD'] +
-                                                             delta_step,
+            processed[obs]['bjd_oversampling'] = np.linspace(observational_pams[obs]['BJD'] - half_time,
+                                                             observational_pams[obs]['BJD'] + half_time,
                                                              n_oversampling, dtype=np.double)
-
             if planet_dict['orbit'] == 'circular':
                 # Time of pericenter concides with transit time, if we assume e=0 and omega=np.pi/2.
                 eccentricity = 0.00

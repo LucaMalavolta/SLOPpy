@@ -232,10 +232,10 @@ def compute_clv_rm_modelling(config_in):
             n_oversampling = int(observational_pams[obs]['EXPTIME'] / clv_rm_dict['time_step'])
 
             if n_oversampling % 2 == 0:  n_oversampling += 1
-            delta_step = observational_pams[obs]['EXPTIME'] / n_oversampling / 86400.
+            half_time = observational_pams[obs]['EXPTIME'] / 2 / 86400.
 
-            processed[obs]['bjd_oversampling'] = np.linspace(observational_pams[obs]['BJD'] - delta_step,
-                                                             observational_pams[obs]['BJD'] + delta_step,
+            processed[obs]['bjd_oversampling'] = np.linspace(observational_pams[obs]['BJD'] - half_time,
+                                                             observational_pams[obs]['BJD'] + half_time,
                                                              n_oversampling, dtype=np.double)
 
             if planet_dict['orbit'] == 'circular':
