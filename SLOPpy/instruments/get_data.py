@@ -13,7 +13,7 @@ def get_calib_data(instrument, archive, file_rad, fiber='A', order_selection=Non
         return HARPN_DRSv3_get_calib_data(archive, file_rad, fiber=fiber, order_selection=order_selection)
     elif instrument =='HARPS':
         return HARPS_DRSv3_get_calib_data(archive, file_rad, fiber=fiber, order_selection=order_selection)
-    elif instrument =='PEPSI':
+    elif instrument in ['PEPSI', 'PEPSI_red', 'PEPSI_blue']:
         return PEPSI_get_calib_data(archive, file_rad, fiber=fiber, order_selection=order_selection)
     else:
         raise ValueError("Instrument not supported")
@@ -25,7 +25,7 @@ def get_input_data(instrument, archive, file_rad, mask, fiber='A', skip_ccf=None
         return HARPN_DRSv3_get_input_data(archive, file_rad, mask, fiber=fiber, skip_ccf=skip_ccf, skip_s1d=skip_s1d, order_selection=order_selection)
     elif instrument =='HARPS':
         return HARPS_DRSv3_get_input_data(archive, file_rad, mask, fiber=fiber, skip_ccf=skip_ccf, skip_s1d=skip_s1d, order_selection=order_selection)
-    elif instrument =='PEPSI':
+    elif instrument in ['PEPSI', 'PEPSI_red', 'PEPSI_blue']:
         return PEPSI_get_input_data(archive, file_rad, mask, fiber=fiber, skip_ccf=skip_ccf, skip_s1d=skip_s1d, order_selection=order_selection)
     else:
         raise ValueError("Instrument not supported")
