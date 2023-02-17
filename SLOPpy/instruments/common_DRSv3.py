@@ -37,20 +37,19 @@ def DRSv3_map_orders_AB(properties, order_selection):
 
 def DRSv3_give_back_selected_orders(properties, fiber, order_selection):
 
-    map_orders_A, map_orders_B = HARPNv3_map_orders_AB(properties, order_selection)
+    map_orders_A, map_orders_B = DRSv3_map_orders_AB(properties, order_selection)
     if fiber != 'A':
         return map_orders_B
     else:
         return map_orders_A
 
-def DRSv3_get_calib_data(archive, file_rad, fiber='A', order_selection=None):
+def DRSv3_get_calib_data(archive, file_rad, keywords, properties, fiber='A', order_selection=None):
 
     calib_dict = {}
 
-    keywords, properties = DRSv3_get_instrument_keywords()
     selected_orders = DRSv3_give_back_selected_orders(properties, fiber, order_selection)
 
-    map_orders_A, map_orders_B = HARPNv3_map_orders_AB(properties, order_selection)
+    map_orders_A, map_orders_B = DRSv3_map_orders_AB(properties, order_selection)
 
     if fiber=='A':
         calib_dict['fibAB_orders_match'] = map_orders_A - np.min(selected_orders)
@@ -92,12 +91,11 @@ def DRSv3_get_calib_data(archive, file_rad, fiber='A', order_selection=None):
     return calib_dict
 
 
-def DRSv3_get_input_data(archive, file_rad, mask, fiber='A', skip_ccf=None, skip_s1d=True, order_selection=None):
+def DRSv3_get_input_data(archive, file_rad, keywords, properties, mask, fiber='A', skip_ccf=None, skip_s1d=True, order_selection=None):
 
     input_dict = {'mask': mask, 'header':{}}
     input_s1d = {'header':{}}
 
-    keywords, properties = DRSv3_get_instrument_keywords()
     selected_orders = DRSv3_give_back_selected_orders(properties, fiber, order_selection)
 
     if mask is None:
@@ -215,7 +213,7 @@ def DRSv3_get_input_data(archive, file_rad, mask, fiber='A', skip_ccf=None, skip
         input_dict['LST'] = e2ds_fits[0].header['LST']
 
         try:
-	        input_dict['AIRMASS'] = e2ds_fits[0].header['AIRMASS']
+            input_dict['AIRMASS'] = e2ds_fits[0].header['AIRMASS']
         except:
             input_dict['AIRMASS'] = (e2ds_fits[0].header[keywords['airmass_alt_start']]
 										+ e2ds_fits[0].header[keywords['airmass_alt_end']])/2.

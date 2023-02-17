@@ -95,9 +95,11 @@ def HARPNv3_get_instrument_keywords():
 # Shortcut from DRS-geenral to instrument-specific subroutine
 def HARPN_DRSv3_get_calib_data(archive, file_rad, fiber='A', order_selection=None):
 
-    return DRSv3_get_calib_data(archive, file_rad, fiber=fiber, order_selection=order_selection)
+    keywords, properties = HARPNv3_get_instrument_keywords()
+    return DRSv3_get_calib_data(archive, file_rad, keywords, properties, fiber=fiber, order_selection=order_selection)
 
 # Shortcut from DRS-geenral to instrument-specific subroutine
 def HARPN_DRSv3_get_input_data(archive, file_rad, mask, fiber='A', skip_ccf=None, skip_s1d=True, order_selection=None):
 
-    return DRSv3_get_input_data(archive, file_rad, mask, fiber=fiber, skip_ccf=skip_ccf, skip_s1d=skip_s1d, order_selection=order_selection)
+    keywords, properties = HARPNv3_get_instrument_keywords()
+    return DRSv3_get_input_data(archive, file_rad, keywords, properties, mask, fiber=fiber, skip_ccf=skip_ccf, skip_s1d=skip_s1d, order_selection=order_selection)
