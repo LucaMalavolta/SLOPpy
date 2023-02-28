@@ -84,6 +84,12 @@ def sloppy_run():
     pipeline_common_routines['clv_rm_models'] = SLOPpy.compute_clv_rm_models
     pipeline_common_routines['transmission_spectrum_preparation'] = SLOPpy.compute_transmission_spectrum_preparation
 
+    pipeline_common_routines['write_out_transmission'] = SLOPpy.write_out_transmission
+    pipeline_common_routines['write_out_transmission_stellarRF'] = SLOPpy.write_out_transmission_stellarRF
+    pipeline_common_routines['write_out_transmission_planetRF'] = SLOPpy.write_out_transmission_planetRF
+    pipeline_common_routines['write_out_transmission_observerRF'] = SLOPpy.write_out_transmission_observerRF
+
+
     """ Legacy routines for testing purposes """
     pipeline_routines = collections.OrderedDict()
 
@@ -310,7 +316,7 @@ def sloppy_run():
     plot_lines_average_routines = collections.OrderedDict()
 
     # ! These should be removed and performed line by line !
-    
+
     plot_lines_average_routines['transmission_binned_mcmc'] = SLOPpy.plot_transmission_binned_mcmc
     plot_lines_average_routines['transmission_spectrum_average_planetRF'] = SLOPpy.plot_transmission_spectrum_average_planetRF
     plot_lines_average_routines['transmission_spectrum_average_observerRF'] = SLOPpy.plot_transmission_spectrum_average_observerRF

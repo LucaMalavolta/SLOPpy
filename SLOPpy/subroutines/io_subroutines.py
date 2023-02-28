@@ -35,7 +35,8 @@ __all__ = ["save_to_cpickle",
            "from_config_get_transmission_mcmc",
            "from_config_get_spectral_lines",
            "from_config_get_interactive_plots",
-           "from_config_get_pca_parameters"]
+           "from_config_get_pca_parameters",
+           "from_config_get_fullspectrum_parameters"]
 
 accepted_extensions = ['.yaml', '.yml', '.conf', '.config', '.input', ]
 
@@ -133,7 +134,7 @@ def pars_input(config_in):
         if 'refraction' not in config_in['instruments'][instrument]:
             config_in['instruments'][instrument]['refraction'] = {}
 
-        """ when the refractions parameters are not explicitely specified in this section, they are either inherited 
+        """ when the refractions parameters are not explicitely specified in this section, they are either inherited
         from the top level dictionary or copied from the default dictionary """
         for key, key_val in config_default['refraction'].items():
             if key not in config_in['instruments'][instrument]['refraction']:
@@ -430,5 +431,17 @@ def from_config_get_pca_parameters(config_in):
     """
     try:
         return config_in['pca_parameters']
+    except:
+        return {}
+
+
+def from_config_get_fullspectrum_parameters(config_in):
+    """
+    This subroutine creates a shortcut to the system dictionary
+    :param config_in:
+    :return: dictionary
+    """
+    try:
+        return config_in['full_spectrum']
     except:
         return {}
