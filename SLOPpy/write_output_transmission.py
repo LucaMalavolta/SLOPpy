@@ -7,39 +7,40 @@ from SLOPpy.subroutines.shortcuts import *
 from SLOPpy.subroutines.math_functions import *
 from SLOPpy.transmission_spectrum_preparation import compute_transmission_spectrum_preparation
 
-__all__ = ['write_out_transmission',
-           'plot_out_transmission']
+__all__ = ['write_output_transmission', 'plot_output_transmission',
+'write_output_transmission_planetRF', 'plot_output_transmission_planetRF',
+'write_output_transmission_stellarRF', 'plot_output_transmission_stellarRF',
+'write_output_transmission_observerRF', 'plot_output_transmission_observerRF']
 
-
-subroutine_name = 'write_out_transmission'
+subroutine_name = 'write_output_transmission'
 sampler_name = 'emcee'
 
 
-def write_out_transmission_planetRF(config_in):
-    write_out_transmission(config_in, reference='planetRF')
+def write_output_transmission_planetRF(config_in):
+    write_output_transmission(config_in, reference='planetRF')
 
 
-def plot_out_transmission_planetRF(config_in, night_input, results_input=''):
-    plot_out_transmission(config_in, night_input, results_input, reference='planetRF')
+def plot_output_transmission_planetRF(config_in, night_input, results_input=''):
+    plot_output_transmission(config_in, night_input, results_input, reference='planetRF')
 
 
-def write_out_transmission_stellarRF(config_in):
-    write_out_transmission(config_in, reference='stellarRF')
+def write_output_transmission_stellarRF(config_in):
+    write_output_transmission(config_in, reference='stellarRF')
 
 
-def plot_out_transmission_stellarRF(config_in, night_input, results_input=''):
-    plot_out_transmission(config_in, night_input, results_input, reference='stellarRF')
+def plot_output_transmission_stellarRF(config_in, night_input, results_input=''):
+    plot_output_transmission(config_in, night_input, results_input, reference='stellarRF')
 
 
-def write_out_transmission_observerRF(config_in):
-    write_out_transmission(config_in, reference='observerRF')
+def write_output_transmission_observerRF(config_in):
+    write_output_transmission(config_in, reference='observerRF')
 
 
-def plot_out_transmission_observerRF(config_in, night_input, results_input=''):
-    plot_out_transmission(config_in, night_input, results_input, reference='observerRF')
+def plot_output_transmission_observerRF(config_in, night_input, results_input=''):
+    plot_output_transmission(config_in, night_input, results_input, reference='observerRF')
 
 
-def write_out_transmission(config_in, reference='planetRF', night_input='', preparation_only=False, pca_iteration=-1):
+def write_output_transmission(config_in, reference='planetRF', night_input='', preparation_only=False, pca_iteration=-1):
 
     results_list_default = ['user']
     # compute_transmission_spectrum_preparation(config_in)
@@ -485,7 +486,7 @@ def write_out_transmission(config_in, reference='planetRF', night_input='', prep
         clv_rm_models = None
 
 
-def plot_out_transmission(config_in, night_input='', results_input='', reference='planetRF', pca_iteration=-1):
+def plot_output_transmission(config_in, night_input='', results_input='', reference='planetRF', pca_iteration=-1):
 
     night_dict = from_config_get_nights(config_in)
 

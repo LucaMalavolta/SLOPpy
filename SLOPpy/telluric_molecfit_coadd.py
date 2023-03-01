@@ -27,6 +27,8 @@ def compute_telluric_molecfit_coadd(config_in):
 
     compute_telluric_molecfit_preparation(config_in)
 
+    aer_version = molecfit_dict.get('aer_version', '3.8')
+
     for night in night_dict:
 
         instrument_name = night_dict[night]['instrument']
@@ -110,6 +112,8 @@ def compute_telluric_molecfit_coadd(config_in):
 
         # There must be a more elegant way to do this, but I'm, not aware of it
         for n_obs, obs in enumerate(lists['observations']):
+
+            input_data[obs]['molecfit']['aer_version'] = aer_version
 
             processed[obs] = {
                 'n_orders': input_data[obs]['n_orders'],

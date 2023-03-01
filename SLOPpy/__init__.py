@@ -34,6 +34,7 @@ from SLOPpy.spectra_lightcurve_average import *
 from SLOPpy.transmission_lightcurve import *
 from SLOPpy.transmission_lightcurve_average import *
 from SLOPpy.write_output_spectra import *
+from SLOPpy.write_output_transmission import *
 
 from SLOPpy.quick_transmission import *
 

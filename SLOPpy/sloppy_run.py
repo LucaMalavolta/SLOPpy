@@ -84,10 +84,10 @@ def sloppy_run():
     pipeline_common_routines['clv_rm_models'] = SLOPpy.compute_clv_rm_models
     pipeline_common_routines['transmission_spectrum_preparation'] = SLOPpy.compute_transmission_spectrum_preparation
 
-    pipeline_common_routines['write_out_transmission'] = SLOPpy.write_out_transmission
-    pipeline_common_routines['write_out_transmission_stellarRF'] = SLOPpy.write_out_transmission_stellarRF
-    pipeline_common_routines['write_out_transmission_planetRF'] = SLOPpy.write_out_transmission_planetRF
-    pipeline_common_routines['write_out_transmission_observerRF'] = SLOPpy.write_out_transmission_observerRF
+    pipeline_common_routines['write_output_transmission'] = SLOPpy.write_output_transmission
+    pipeline_common_routines['write_output_transmission_stellarRF'] = SLOPpy.write_output_transmission_stellarRF
+    pipeline_common_routines['write_output_transmission_planetRF'] = SLOPpy.write_output_transmission_planetRF
+    pipeline_common_routines['write_output_transmission_observerRF'] = SLOPpy.write_output_transmission_observerRF
 
 
     """ Legacy routines for testing purposes """

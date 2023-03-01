@@ -883,7 +883,7 @@ def write_molecfit_par(filename_par, wave_include, molecfit_dict, observing_dict
     # Relative chi-square convergence criterion.
     # FTOL=1e-10
     try:
-        fileout.write('FTOL={0:f}\n'.format(molecfit_dict['ftol']))
+        fileout.write('FTOL={0:.12f}\n'.format(molecfit_dict['ftol']))
     except ValueError:
         fileout.write("FTOL=" + molecfit_dict['ftol'] + "\n")
 
@@ -891,12 +891,10 @@ def write_molecfit_par(filename_par, wave_include, molecfit_dict, observing_dict
     # Relative parameter convergence criterion.
     # XTOL=1e-10
     try:
-        fileout.write('XTOL={0:f}\n'.format(molecfit_dict['xtol']))
+        fileout.write('XTOL={0:.12f}\n'.format(molecfit_dict['xtol']))
     # Relative chi2 convergence criterion
     except ValueError:
         fileout.write("XTOL=" + molecfit_dict['xtol'] + "\n")
-
-
 
     # --FLUX_UNIT
     # Conversion of fluxes from phot/(s*m2*mum*as2) (emission spectrum only)
@@ -1124,10 +1122,7 @@ def write_molecfit_par(filename_par, wave_include, molecfit_dict, observing_dict
     # --LNFL_LINE_DB
     # File name of the line list (must be stored in the directory :
     # ({TELLURICCORR_DATA_PATH}/hitran/).
-    if molecfit_dict.get('aer_version', False):
-        fileout.write('LNFL_LINE_DB=aer_v_{0:2.1f}\n'.format(molecfit_dict['aer_version']))
-    else:
-        fileout.write('LNFL_LINE_DB=aer_v_3.8\n')
+    fileout.write('LNFL_LINE_DB=aer_v_'+molecfit_dict['aer_version']+'\n')
 
     # --LNFL_LINE_DB_FORMAT
     # Format of the line file: gives the length in terms of characters per line.
