@@ -11,7 +11,7 @@ __all__ = ["compute_interstellar_lines", "plot_interstellar_lines"]
 subroutine_name = 'interstellar_lines'
 
 
-#def plot_identify_stellar_lines(config_in)
+# def plot_identify_stellar_lines(config_in)
 
 def compute_interstellar_lines(config_in):
 
@@ -89,16 +89,18 @@ def compute_interstellar_lines(config_in):
             processed[line_name]['max_wave'] = min(shared_data['coadd']['wavelength_range'][1], line[0] + line[2]*2)
 
             processed[line_name]['wave'] = np.arange(processed[line_name]['min_wave'],
-                                                                   processed[line_name]['max_wave'],
-                                                                   instrument_dict[instrument]['wavelength_step'])
+                                                     processed[line_name]['max_wave'],
+                                                     instrument_dict[instrument]['wavelength_step'])
 
             processed[line_name]['size'] = np.size(processed[line_name]['wave'], axis=0)
             processed[line_name]['step'] = np.ones(processed[line_name]['size'])\
-                                                         * instrument_dict[instrument]['wavelength_step']
+                * instrument_dict[instrument]['wavelength_step']
 
             processed[line_name]['correction'] = np.ones(processed[line_name]['size'])
 
             for obs in lists['observations']:
+
+                preserve_flux = input_data[obs].get('absolute_flux', True)
 
                 """ shifting a chunk of the spectra to the Solar System Barycenter reference """
                 processed[line_name]['line_rebin'][obs] = \
@@ -108,6 +110,7 @@ def compute_interstellar_lines(config_in):
                                    calib_data['blaze'],
                                    processed[line_name]['wave'],
                                    processed[line_name]['step'],
+                                   preserve_flux=preserve_flux,
                                    rv_shift=observational_pams[obs]['rv_shift_ORF2BRF'])
 
                 argmin_sel = np.argmin(processed[line_name]['line_rebin'][obs][5:-5]) + 5
@@ -115,7 +118,8 @@ def compute_interstellar_lines(config_in):
 
                 processed[line_name]['line_shift']['selected_points'].append(wave_sel)
 
-            processed[line_name]['line_shift']['position'] = np.median(processed[line_name]['line_shift']['selected_points'])
+            processed[line_name]['line_shift']['position'] = np.median(
+                processed[line_name]['line_shift']['selected_points'])
             processed[line_name]['line_shift']['delta_lambda'] = processed[line_name]['line_shift']['position'] - line[0]
 
             try:
@@ -125,7 +129,6 @@ def compute_interstellar_lines(config_in):
                     interstellar[line_name] = line[0]
             except:
                 interstellar[line_name] = line[0]
-
 
             """ selection of spectral range for continuum normalization and interstellar line modelling"""
 
@@ -139,11 +142,10 @@ def compute_interstellar_lines(config_in):
             processed[line_name]['interstellar_selection'] = \
                 (processed[line_name]['wavelength_selection'] | processed[line_name]['continuum_selection'])
 
-
             spline_wave_points = []
             spline_norm_points = []
 
-            # TODO 
+            # TODO
             #! 1) Rescale by median each observation and collect all the value
             #! 2) Perform a continuum normalization on the collect values, with
             #! iterative sigma-clipping
@@ -151,9 +153,9 @@ def compute_interstellar_lines(config_in):
 
             for obs in lists['telluric']:
 
-                #sel1 = (np.abs(processed[line_name]['wave'] - interstellar[line_name]) < line[1])
-                #sel2 = (~sel1) & (np.abs(processed[line_name]['wave'] - interstellar[line_name]) < line[2])
-                #sel3 = (sel1 | sel2)
+                # sel1 = (np.abs(processed[line_name]['wave'] - interstellar[line_name]) < line[1])
+                # sel2 = (~sel1) & (np.abs(processed[line_name]['wave'] - interstellar[line_name]) < line[2])
+                # sel3 = (sel1 | sel2)
 
                 """ normalization around the interstellar line """
                 processed[line_name]['poly_coeff'][obs] = \
@@ -175,8 +177,8 @@ def compute_interstellar_lines(config_in):
             spline_norm_points = np.asarray(spline_norm_points)[spline_sorting_index]
 
             processed[line_name]['spline_eval'], \
-            processed[line_name]['spline_coeff'], \
-            processed[line_name]['spline_knots'] = \
+                processed[line_name]['spline_coeff'], \
+                processed[line_name]['spline_knots'] = \
                 compute_spline(spline_wave_points, spline_norm_points, 0.08, knot_order=3)
 
             processed[line_name]['correction'][processed[line_name]['wavelength_selection']] = \
@@ -186,10 +188,10 @@ def compute_interstellar_lines(config_in):
             for obs in lists['observations']:
 
                 interstellar[obs]['wavelength_selection'] = \
-                    (np.abs(interstellar[obs]['wave_BRF']-interstellar[line_name])<line[1])
+                    (np.abs(interstellar[obs]['wave_BRF']-interstellar[line_name]) < line[1])
                 interstellar[obs]['continuum_selection'] = \
                     (~interstellar[obs]['wavelength_selection']) \
-                    & (np.abs(interstellar[obs]['wave_BRF']-interstellar[line_name])<line[2])
+                    & (np.abs(interstellar[obs]['wave_BRF']-interstellar[line_name]) < line[2])
                 interstellar[obs]['interstellar_selection'] = \
                     (interstellar[obs]['wavelength_selection'] | interstellar[obs]['continuum_selection'])
 
@@ -213,7 +215,7 @@ def plot_interstellar_lines(config_in, night_input=''):
     if not interstellar_lines:
         return
 
-    if night_input=='':
+    if night_input == '':
         night_list = night_dict
     else:
         night_list = np.atleast_1d(night_input)
@@ -237,18 +239,18 @@ def plot_interstellar_lines(config_in, night_input=''):
 
         colors_properties, colors_plot, colors_scatter = make_color_array_matplotlib3(lists, observational_pams)
 
-        #fig = plt.figure(figsize=(12, 6))
-        #gs = GridSpec(2, 2, width_ratios=[50, 1])
+        # fig = plt.figure(figsize=(12, 6))
+        # gs = GridSpec(2, 2, width_ratios=[50, 1])
         #
-        #ax1 = plt.subplot(gs[0, 0])
-        #ax2 = plt.subplot(gs[1, 0], sharex=ax1)
-        #cbax1 = plt.subplot(gs[:, 1])
+        # ax1 = plt.subplot(gs[0, 0])
+        # ax2 = plt.subplot(gs[1, 0], sharex=ax1)
+        # cbax1 = plt.subplot(gs[:, 1])
         fig, gs, cbax1, ax1, ax2 = grid_2plot()
 
         for i, obs in enumerate(lists['observations']):
 
             """rescaling"""
-            processed[obs]['flux_rescaling'], processed[obs]['flux_rescaled'], processed[obs]['flux_rescaled_err']  = \
+            processed[obs]['flux_rescaling'], processed[obs]['flux_rescaled'], processed[obs]['flux_rescaled_err'] = \
                 perform_rescaling(interstellar[obs]['wave_BRF'],
                                   processed[obs]['flux'],
                                   processed[obs]['flux_err'],
@@ -261,7 +263,7 @@ def plot_interstellar_lines(config_in, night_input=''):
                 ax1.scatter(interstellar[obs]['wave_BRF'], processed[obs]['flux_rescaled'],
                             c=colors_scatter['mBJD'][obs], s=1, alpha=0.5)
 
-            #ax1.plot(interstellar['wave'], interstellar['correction'], c='black')
+            # ax1.plot(interstellar['wave'], interstellar['correction'], c='black')
 
             ax2.scatter(interstellar[obs]['wave_BRF'], processed[obs]['flux_rescaled']/interstellar[obs]['correction'],
                         c=colors_scatter['mBJD'][obs], s=1, alpha=0.5)
@@ -278,7 +280,7 @@ def plot_interstellar_lines(config_in, night_input=''):
             ax2.axvline(interstellar[line_name]-line[2], c='g')
             ax2.axvline(interstellar[line_name]+line[2], c='g')
 
-            #ax1.plot(processed[line_name]['wave'], processed[line_name]['flux_rescaled'], c='b')
+            # ax1.plot(processed[line_name]['wave'], processed[line_name]['flux_rescaled'], c='b')
 
             try:
                 wave_min = min(wave_min, interstellar[line_name])
@@ -300,5 +302,5 @@ def plot_interstellar_lines(config_in, night_input=''):
         sm.set_array([])  # You have to set a dummy-array for this to work...
         cbar = plt.colorbar(sm, cax=cbax1)
         cbar.set_label('BJD - 2450000.0')
-        #fig.subplots_adjust(wspace=0.05, hspace=0.4)
+        # fig.subplots_adjust(wspace=0.05, hspace=0.4)
         plt.show()

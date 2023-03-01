@@ -1,9 +1,10 @@
 from __future__ import print_function, division
+from SLOPpy.instruments.get_data import *
 from SLOPpy.subroutines.common import *
-from SLOPpy.subroutines.spectral_subroutines import *
 from SLOPpy.subroutines.fit_subroutines import *
 from SLOPpy.subroutines.io_subroutines import *
 from SLOPpy.subroutines.plot_subroutines import *
+from SLOPpy.subroutines.shortcuts import *
 
 __all__ = ["prepare_datasets", "plot_dataset"]
 
@@ -201,11 +202,11 @@ def prepare_datasets(config_in):
             higher values
 
             We proceed in this way:
-            -   identify the negative values and make a statistics of their
+            -  identify the negative values and make a statistics of their
                 average value
-            - if in relevant number, we assume that the their median value
-                corresponds to the noise floor
-            - we add the noise floor to the error estimate
+            - if in relevant number, we assume that the median of their absolute
+                values corresponds to the noise floor
+            - we add the noise floor to the error estimate 
             """
 
             observations_A[obs]['null'] = (observations_A[obs]['e2ds'] <= 0.0)
@@ -213,9 +214,13 @@ def prepare_datasets(config_in):
                 observations_A[obs]['noise_floor'] = np.median(np.abs(
                     observations_A[obs]['e2ds'][observations_A[obs]['null']]))
             else:
-                observations_A[obs]['noise_floor'] = 1.
+                if observations_A[obs].get('absolute_flux', True):
+                    observations_A[obs]['noise_floor'] = 1.0000
+                else:
+                    observations_A[obs]['noise_floor'] = 0.00001
 
-            observations_A[obs]['e2ds_err'] = np.sqrt(np.abs(observations_A[obs]['e2ds'])) + observations_A[obs]['noise_floor']
+
+            observations_A[obs]['e2ds_err'] = np.sqrt(observations_A[obs]['e2ds_err']**2 + observations_A[obs]['noise_floor']**2)
             #observations_A[obs]['e2ds_err'] = np.sqrt(observations_A[obs]['e2ds'])
 
             if 'n_orders' not in observations_A or 'n_pixels' not in observations_A:
@@ -638,13 +643,17 @@ def plot_dataset(config_in, night_input=''):
 
         cbax1 = plt.subplot(gs[:, 1])
 
+
         for i, obs in enumerate(lists['observations']):
-            rescaling = compute_rescaling(input_data[obs]['s1d_wave'], input_data[obs]['s1d_flux'],
-                                          wavelength_rescaling)
-            ax1.plot(input_data[obs]['s1d_wave'], input_data[obs]['s1d_flux'] / rescaling, zorder=i, lw=1,
-                     c=line_colors[i], alpha=0.5)
-            ax2.plot(input_data[obs]['s1d_wave'], input_data[obs]['s1d_flux'] / rescaling, zorder=-i, lw=1,
-                     c=line_colors[i], alpha=0.5)
+
+            rescaling = compute_rescaling(input_data[obs]['wave'], input_data[obs]['e2ds'], wavelength_rescaling)
+            for order in range(0,input_data[obs]['n_orders']):
+
+
+                ax1.plot(input_data[obs]['wave'][order,:], input_data[obs]['e2ds'][order,:]/ rescaling, zorder=i, lw=1,
+                        c=line_colors[i], alpha=0.5)
+                ax2.plot(input_data[obs]['wave'][order,:], input_data[obs]['e2ds'][order,:] / rescaling, zorder=-i, lw=1,
+                        c=line_colors[i], alpha=0.5)
 
         ax1.legend(loc=3)
         ax1.set_title('Night: ' + night)

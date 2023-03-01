@@ -74,6 +74,8 @@ master-out:
   use_smoothed: False
   use_composite: False
   boxcar_smoothing: 3
+full_spectrum:
+  
 instruments:
   HARPS-N:
     data_archive: ../archive/

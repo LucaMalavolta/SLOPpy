@@ -54,7 +54,7 @@ def compute_clv_rm_models(config_in):
         print()
 
         """
-        Loading the spectral synthesis results, at the moment only SME output is supported. 
+        Loading the spectral synthesis results, at the moment only SME output is supported.
         Properties of the synthesis data files
         - limb_angles: this is an input to SME, so it is specific on how the synthesis has been performed
         - spectra: stellar spectrum as a function of the limb angle, sampled near the spectral lines
@@ -143,7 +143,7 @@ def compute_clv_rm_models(config_in):
         star_grid['mu'][star_grid['inside']] = np.sqrt(
             1. - star_grid['rc'][star_grid['inside']] ** 2)
 
-        """  2.2 Determine the Doppler shift to apply to the spectrum of each grid cell, from Cegla+2015 """
+        """  2.2 Determine the Doppler shift to apply to the spectrum of each grid cell, from Cegla+2016 """
 
         star_grid['x_ortho'] = star_grid['xc'] * np.cos(star_dict['lambda'][0] * deg2rad) \
             - star_grid['yc'] * np.sin(
@@ -158,7 +158,7 @@ def compute_clv_rm_models(config_in):
         star_grid['z_ortho'][star_grid['inside']] = np.sqrt(
             1. -star_grid['r_ortho'][star_grid['inside']] ** 2)
 
-        """ rotate the coordinate system around the x_ortho axis by an agle: """
+        """ rotate the coordinate system around the x_ortho axis by an angle: """
         star_grid['beta'] = (np.pi / 2.) - \
             star_dict['inclination'][0] * deg2rad
 
@@ -284,7 +284,7 @@ def compute_clv_rm_models(config_in):
         actual range, so doing it this way is fine)"""
 
         wave_fix_convolution = (clv_rm_models['common']['wave'] > clv_rm_models['common']['wave'][0]+wave_fix_convo) \
-            | (clv_rm_models['common']['wave'] > clv_rm_models['common']['wave'][-1]-wave_fix_convo) 
+            | (clv_rm_models['common']['wave'] > clv_rm_models['common']['wave'][-1]-wave_fix_convo)
         clv_rm_models['common']['norm_convolved'][wave_fix_convolution] = clv_rm_models['common']['norm'][wave_fix_convolution]
 
         """
@@ -321,14 +321,11 @@ def compute_clv_rm_models(config_in):
 
             if n_oversampling % 2 == 0:
                 n_oversampling += 1
-            delta_step = observational_pams[obs]['EXPTIME'] / \
-                n_oversampling / 86400.
+            half_time = observational_pams[obs]['EXPTIME'] / 2 / 86400.
 
-            processed[obs]['bjd_oversampling'] = np.linspace(observational_pams[obs]['BJD'] - delta_step,
-                                                             observational_pams[obs]['BJD'] +
-                                                             delta_step,
+            processed[obs]['bjd_oversampling'] = np.linspace(observational_pams[obs]['BJD'] - half_time,
+                                                             observational_pams[obs]['BJD'] + half_time,
                                                              n_oversampling, dtype=np.double)
-
             if planet_dict['orbit'] == 'circular':
                 # Time of pericenter concides with transit time, if we assume e=0 and omega=np.pi/2.
                 eccentricity = 0.00

@@ -66,6 +66,7 @@ def write_output_spectra(config_in):
             output_spectra[obs] = {}
 
             output_spectra[obs]['BJD'] = input_data[obs]['BJD']
+            preserve_flux = input_data[obs].get('absolute_flux', True)
 
             output_spectra[obs]['SRF_rebinned'] = \
                 rebin_2d_to_1d(input_data[obs]['wave'],
@@ -74,6 +75,7 @@ def write_output_spectra(config_in):
                                calib_data['blaze'],
                                shared_data['coadd']['wave'],
                                shared_data['coadd']['step'],
+                               preserve_flux=preserve_flux,
                                rv_shift=observational_pams[obs]['rv_shift_ORF2SRF'])
 
             output_spectra[obs]['SRF_rebinned_err'] = \
@@ -83,6 +85,7 @@ def write_output_spectra(config_in):
                                calib_data['blaze'],
                                shared_data['coadd']['wave'],
                                shared_data['coadd']['step'],
+                               preserve_flux=preserve_flux,
                                rv_shift=observational_pams[obs]['rv_shift_ORF2SRF'])
 
             output_spectra[obs]['SRF_rescaling'], \

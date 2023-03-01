@@ -7,31 +7,56 @@ from SLOPpy.subroutines.shortcuts import *
 from SLOPpy.subroutines.math_functions import *
 from SLOPpy.transmission_spectrum_preparation import compute_transmission_spectrum_preparation
 
-__all__ = ['compute_transmission_spectrum',
-           'plot_transmission_spectrum']
+__all__ = ['write_output_transmission', 'plot_output_transmission',
+'write_output_transmission_planetRF', 'plot_output_transmission_planetRF',
+'write_output_transmission_stellarRF', 'plot_output_transmission_stellarRF',
+'write_output_transmission_observerRF', 'plot_output_transmission_observerRF']
 
-
-subroutine_name = 'transmission_spectrum'
+subroutine_name = 'write_output_transmission'
 sampler_name = 'emcee'
 
 
-def compute_transmission_spectrum(config_in, lines_label, reference='planetRF', night_input='', preparation_only=False, pca_iteration=-1):
+def write_output_transmission_planetRF(config_in):
+    write_output_transmission(config_in, reference='planetRF')
 
-    results_list_default = ['user',
-                            'mcmc_night_MED',
-                            'mcmc_night_MAP',
-                            'mcmc_global_MED',
-                            'mcmc_global_MAP']
+
+def plot_output_transmission_planetRF(config_in, night_input, results_input=''):
+    plot_output_transmission(config_in, night_input, results_input, reference='planetRF')
+
+
+def write_output_transmission_stellarRF(config_in):
+    write_output_transmission(config_in, reference='stellarRF')
+
+
+def plot_output_transmission_stellarRF(config_in, night_input, results_input=''):
+    plot_output_transmission(config_in, night_input, results_input, reference='stellarRF')
+
+
+def write_output_transmission_observerRF(config_in):
+    write_output_transmission(config_in, reference='observerRF')
+
+
+def plot_output_transmission_observerRF(config_in, night_input, results_input=''):
+    plot_output_transmission(config_in, night_input, results_input, reference='observerRF')
+
+
+def write_output_transmission(config_in, reference='planetRF', night_input='', preparation_only=False, pca_iteration=-1):
+
+    results_list_default = ['user']
     # compute_transmission_spectrum_preparation(config_in)
+    pca_parameters = from_config_get_pca_parameters(config_in)
 
     night_dict = from_config_get_nights(config_in)
     ### transmission_dict = from_config_get_transmission(config_in)
-    pca_parameters = from_config_get_pca_parameters(config_in)
+    shared_data = load_from_cpickle('shared', config_in['output'])
 
-    spectral_lines = from_config_get_spectral_lines(config_in)
-    lines_dict = spectral_lines[lines_label]
 
-    norm_dict = lines_dict.get('normalization', {})
+    fullspectrum_dict = from_config_get_fullspectrum_parameters(config_in)
+
+    clv_rm_correction = fullspectrum_dict.get('clv_rm_correction', True)
+    normalize_transmission = norm_dict.get('normalize_transmission', True)
+
+    norm_dict = fullspectrum_dict.get('normalization', {})
     norm_pams = {}
     norm_pams['normalize_transmission'] = norm_dict.get('normalize_transmission', True)
     norm_pams['model_poly_degree'] = norm_dict.get('model_poly_degree', 2)
@@ -39,32 +64,46 @@ def compute_transmission_spectrum(config_in, lines_label, reference='planetRF', 
     norm_pams['lower_threshold'] = norm_dict.get('lower_threshold', 0.950)
     norm_pams['percentile_selection'] = norm_dict.get('percentile_selection', 10)
 
-    shared_data = load_from_cpickle('shared', config_in['output'])
 
-    clv_rm_correction = lines_dict.get('clv_rm_correction', True)
+    range_temp = fullspectrum_dict.get('range', None)
+    if range_temp:
+        """ Using the line-specific range to define the transmission spectrum region """
 
-    """ Using the line-specific range to define the transmission spectrum region """
+        shared_selection = (shared_data['coadd']['wave'] >= fullspectrum_dict['range'][0]) \
+            & (shared_data['coadd']['wave'] < fullspectrum_dict['range'][1])
+        binned_selection = (shared_data['binned']['wave'] >= fullspectrum_dict['range'][0]) \
+            & (shared_data['binned']['wave'] < fullspectrum_dict['range'][1])
 
-    shared_selection = (shared_data['coadd']['wave'] >= lines_dict['range'][0]) \
-        & (shared_data['coadd']['wave'] < lines_dict['range'][1])
-    binned_selection = (shared_data['binned']['wave'] >= lines_dict['range'][0]) \
-        & (shared_data['binned']['wave'] < lines_dict['range'][1])
+        transmission_template = {
+            'subroutine': subroutine_name,
+            'range': range_temp,
+            'wave': shared_data['coadd']['wave'][shared_selection],
+            'step': shared_data['coadd']['step'][shared_selection],
+            'size': np.int(np.sum(shared_selection)),
+            'binned_wave': shared_data['binned']['wave'][binned_selection],
+            'binned_step': shared_data['binned']['step'][binned_selection],
+            'binned_size': np.int(np.sum(binned_selection))
+        }
 
-    transmission_template = {
-        'subroutine': subroutine_name,
-        'range': lines_dict['range'],
-        'wave': shared_data['coadd']['wave'][shared_selection],
-        'step': shared_data['coadd']['step'][shared_selection],
-        'size': np.int(np.sum(shared_selection)),
-        'binned_wave': shared_data['binned']['wave'][binned_selection],
-        'binned_step': shared_data['binned']['step'][binned_selection],
-        'binned_size': np.int(np.sum(binned_selection))
-    }
+    else:
+
+        transmission_template = {
+            'subroutine': subroutine_name,
+            'range': shared_data['coadd']['wavelength_range'],
+            'wave': shared_data['coadd']['wave'],
+            'step': shared_data['coadd']['step'],
+            'size': shared_data['coadd']['size'],
+            'binned_range': shared_data['binned']['wavelength_range'],
+            'binned_wave': shared_data['binned']['wave'],
+            'binned_step': shared_data['binned']['step'],
+            'binned_size': shared_data['binned']['size']
+        }
+
 
     for night in night_dict:
 
         print()
-        print("Running {0:45s} for  {1:20s}   Night:{2:15s}  ".format(subroutine_name, lines_label, night))
+        print("Running {0:45s}         Night:{1:15s}  ".format(subroutine_name, night))
 
         preparation_input = load_from_cpickle('transmission_preparation', config_in['output'], night)
 
@@ -82,61 +121,29 @@ def compute_transmission_spectrum(config_in, lines_label, reference='planetRF', 
         lists = load_from_cpickle('lists', config_in['output'], night)
 
         results_list = results_list_default.copy()
-
-        binned_mcmc_night = check_existence_cpickle(
-            'transmission_binned_mcmc_'+sampler_name+'_results', config_in['output'], night, lines_label, it_string)
-        binned_mcmc_global = check_existence_cpickle(
-            'transmission_binned_mcmc_'+sampler_name+'_results', config_in['output'], lines=lines_label, it_string=it_string)
-
-        mcmc_night = check_existence_cpickle(
-            'transmission_mcmc_'+sampler_name+'_results', config_in['output'], night, lines_label, it_string=it_string)
-        mcmc_global = check_existence_cpickle(
-            'transmission_mcmc_'+sampler_name+'_results', config_in['output'], lines=lines_label, it_string=it_string)
-
-        if mcmc_night and mcmc_global:
-            mcmc_results_night = load_from_cpickle(
-                'transmission_mcmc_'+sampler_name+'_results', config_in['output'], night, lines_label, it_string=it_string)
-
-            mcmc_results_global = load_from_cpickle(
-                'transmission_mcmc_'+sampler_name+'_results', config_in['output'], lines=lines_label, it_string=it_string)
-
-            print('  Observational parameters from MCMC fit of unbinned data and configuration file')
-
-        elif binned_mcmc_night and binned_mcmc_global:
-            mcmc_results_night = load_from_cpickle(
-                'transmission_binned_mcmc_'+sampler_name+'_results', config_in['output'], night, lines_label, it_string=it_string)
-
-            mcmc_results_global = load_from_cpickle(
-                'transmission_binned_mcmc_'+sampler_name+'_results', config_in['output'], lines=lines_label, it_string=it_string)
-
-            print('  Observational parameters from MCMC fit of binned data and configuration file')
-
-        else:
-            print('  Observational parameters from configuration file')
-            results_list = ['user']
+        print('  Observational parameters from configuration file')
 
         calib_data = load_from_cpickle('calibration_fibA', config_in['output'], night)
         input_data = retrieve_observations(config_in['output'], night, lists['observations'])
 
         observational_pams = load_from_cpickle('observational_pams', config_in['output'], night)
 
-        if clv_rm_correction:
-            try:
-                clv_rm_models = load_from_cpickle('clv_rm_models', config_in['output'], night, lines_label)
-            except (FileNotFoundError, IOError):
-                clv_rm_models = load_from_cpickle('clv_rm_models', config_in['output'], night)
+        try:
+            clv_rm_models = load_from_cpickle('clv_rm_models', config_in['output'], night)
+        except (FileNotFoundError, IOError):
+            clv_rm_correction = False
 
         for results_selection in results_list:
 
             try:
                 transmission = load_from_cpickle(subroutine_name+'_'+reference + '_' +
-                                                 results_selection, config_in['output'], night, lines_label, it_string=it_string)
-                print("{0:45s} Night:{1:15s}   {2:s}   {3:s}   {4:s}".format(
-                    subroutine_name, night, lines_label, results_selection, 'Retrieved'))
+                                                 results_selection, config_in['output'], night, it_string=it_string)
+                print("{0:45s} Night:{1:15s}         {3:s}   {4:s}".format(
+                    subroutine_name, night, results_selection, 'Retrieved'))
                 continue
             except (FileNotFoundError, IOError):
-                print("{0:45s} Night:{1:15s}   {2:s}   {3:s}   {4:s}".format(
-                    subroutine_name, night, lines_label, results_selection, 'Computing'))
+                print("{0:45s} Night:{1:15s}         {3:s}   {4:s}".format(
+                    subroutine_name, night, results_selection, 'Computing'))
 
             transmission = transmission_template.copy()
 
@@ -178,62 +185,6 @@ def compute_transmission_spectrum(config_in, lines_label, reference='planetRF', 
                     else:
                         rv_shift = observational_pams[obs]['rv_shift_ORF2PRF']
                         rv_shift_clv = observational_pams[obs]['rv_shift_SRF2PRF']
-
-                elif results_selection == 'mcmc_night_MED':
-                    planet_R_factor = mcmc_results_night['results']['planet_R']
-                    if reference in ['observer', 'observerRF', 'ORF']:
-                        rv_shift = 0.000
-                        #rv_shift_clv = mcmc_results_night['results']['observational_pams'][obs]['rv_shift_ORF2SRF']
-                        rv_shift_clv = -observational_pams[obs]['rv_shift_ORF2SRF']
-                    elif reference in ['stellar', 'stellarRF', 'SRF']:
-                        #rv_shift = mcmc_results_night['results']['observational_pams'][obs]['rv_shift_ORF2SRF']
-                        rv_shift = observational_pams[obs]['rv_shift_ORF2SRF']
-                        rv_shift_clv = 0.0000
-                    else:
-                        rv_shift = mcmc_results_night['results']['observational_pams'][obs]['rv_shift_ORF2PRF']
-                        rv_shift_clv = mcmc_results_night['results']['observational_pams'][obs]['rv_shift_SRF2PRF']
-
-                elif results_selection == 'mcmc_night_MAP':
-                    planet_R_factor = mcmc_results_night['results_MAP']['planet_R']
-                    if reference in ['observer', 'observerRF', 'ORF']:
-                        rv_shift = 0.000
-                        #rv_shift_clv = mcmc_results_night['results_MAP']['observational_pams'][obs]['rv_shift_ORF2SRF']
-                        rv_shift = -observational_pams[obs]['rv_shift_ORF2SRF']
-                    elif reference in ['stellar', 'stellarRF', 'SRF']:
-                        #rv_shift = mcmc_results_night['results_MAP']['observational_pams'][obs]['rv_shift_ORF2SRF']
-                        rv_shift = observational_pams[obs]['rv_shift_ORF2SRF']
-                        rv_shift_clv = 0.0000
-                    else:
-                        rv_shift = mcmc_results_night['results_MAP']['observational_pams'][obs]['rv_shift_ORF2PRF']
-                        rv_shift_clv = mcmc_results_night['results_MAP']['observational_pams'][obs]['rv_shift_SRF2PRF']
-
-                elif results_selection == 'mcmc_global_MED':
-                    planet_R_factor = mcmc_results_global['results']['planet_R']
-                    if reference in ['observer', 'observerRF', 'ORF']:
-                        rv_shift = 0.000
-                        #rv_shift_clv = mcmc_results_global['results']['observational_pams'][obs]['rv_shift_ORF2SRF']
-                        rv_shift = -observational_pams[obs]['rv_shift_ORF2SRF']
-                    elif reference in ['stellar', 'stellarRF', 'SRF']:
-                        #rv_shift = mcmc_results_global['results']['observational_pams'][obs]['rv_shift_ORF2SRF']
-                        rv_shift = observational_pams[obs]['rv_shift_ORF2SRF']
-                        rv_shift_clv = 0.0000
-                    else:
-                        rv_shift = mcmc_results_global['results']['observational_pams'][obs]['rv_shift_ORF2PRF']
-                        rv_shift_clv = mcmc_results_global['results']['observational_pams'][obs]['rv_shift_SRF2PRF']
-
-                elif results_selection == 'mcmc_global_MAP':
-                    planet_R_factor = mcmc_results_global['results_MAP']['planet_R']
-                    if reference in ['observer', 'observerRF', 'ORF']:
-                        rv_shift = 0.000
-                        #rv_shift_clv = mcmc_results_global['results_MAP']['observational_pams'][obs]['rv_shift_ORF2SRF']
-                        rv_shift = -observational_pams[obs]['rv_shift_ORF2SRF']
-                    elif reference in ['stellar', 'stellarRF', 'SRF']:
-                        #rv_shift = mcmc_results_global['results_MAP']['observational_pams'][obs]['rv_shift_ORF2SRF']
-                        rv_shift = observational_pams[obs]['rv_shift_ORF2SRF']
-                        rv_shift_clv = 0.0000
-                    else:
-                        rv_shift = mcmc_results_global['results_MAP']['observational_pams'][obs]['rv_shift_ORF2PRF']
-                        rv_shift_clv = mcmc_results_global['results_MAP']['observational_pams'][obs]['rv_shift_SRF2PRF']
 
                 """ Step 2): rebin the 2D ratio spectra to 1D """
 
@@ -344,7 +295,7 @@ def compute_transmission_spectrum(config_in, lines_label, reference='planetRF', 
                         print('   *** No CLV correction')
 
 
-                if norm_pams['normalize_transmission']:
+                if normalize_transmission:
 
                     """ Continuum normalization preparatory steps:
                         1) exclusion of regions with lines of interes
@@ -357,10 +308,10 @@ def compute_transmission_spectrum(config_in, lines_label, reference='planetRF', 
                     """ Continuum normalization:
                         1) exclusion of regions with transmission lines under study, now
                         in the RF of the lines
+
+                        SKIPPED as we are operating on the full spectrum
                     """
-                    for line_key, line_val in lines_dict['lines'].items():
-                        transmission[obs]['line_exclusion'] = transmission[obs]['line_exclusion'] & (
-                            np.abs(transmission['wave']-line_val) > 3.)
+
 
                     """ Continuum normalization:
                         2) exclusion of regions with planetary lines, taking into account the planetary RV semi-amplitude
@@ -526,7 +477,7 @@ def compute_transmission_spectrum(config_in, lines_label, reference='planetRF', 
 
             #save_to_cpickle('transmission_'+reference+'_processed', processed, config_in['output'], night)
             save_to_cpickle(subroutine_name + '_' + reference + '_' + results_selection,
-                            transmission, config_in['output'], night, lines_label, it_string)
+                            transmission, config_in['output'], night, it_string=it_string)
 
             # Forcing memory deallocation
             transmission = None
@@ -535,12 +486,11 @@ def compute_transmission_spectrum(config_in, lines_label, reference='planetRF', 
         clv_rm_models = None
 
 
-def plot_transmission_spectrum(config_in, lines_label, night_input='', results_input='', reference='planetRF', pca_iteration=-1):
-
-    spectral_lines = from_config_get_spectral_lines(config_in)
-    lines_dict = spectral_lines[lines_label]
+def plot_output_transmission(config_in, night_input='', results_input='', reference='planetRF', pca_iteration=-1):
 
     night_dict = from_config_get_nights(config_in)
+
+    fullspectrum_dict = from_config_get_fullspectrum_parameters(config_in)
 
     if night_input == '':
         night_list = night_dict
@@ -548,15 +498,11 @@ def plot_transmission_spectrum(config_in, lines_label, night_input='', results_i
         night_list = np.atleast_1d(night_input)
 
     if results_input == '':
-        results_list = ['user',
-                        'mcmc_night_MED',
-                        'mcmc_night_MAP',
-                        'mcmc_global_MED',
-                        'mcmc_global_MAP']
+        results_list = ['user']
     else:
         results_list = np.atleast_1d(results_input)
 
-    clv_rm_correction = lines_dict.get('clv_rm_correction', True)
+    clv_rm_correction = fullspectrum_dict.get('clv_rm_correction', True)
 
     os.system('mkdir -p plots')
 
@@ -577,10 +523,7 @@ def plot_transmission_spectrum(config_in, lines_label, night_input='', results_i
         preparation_input = None
 
         if clv_rm_correction:
-            try:
-                clv_rm_models = load_from_cpickle('clv_rm_models', config_in['output'], night, lines_label)
-            except (FileNotFoundError, IOError):
-                clv_rm_models = load_from_cpickle('clv_rm_models', config_in['output'], night)
+            clv_rm_models = load_from_cpickle('clv_rm_models', config_in['output'], night)
 
         for results_selection in results_list:
 
@@ -592,7 +535,7 @@ def plot_transmission_spectrum(config_in, lines_label, night_input='', results_i
             """ Retrieving the analysis"""
             try:
                 #processed = load_from_cpickle('transmission_'+reference+'_processed', config_in['output'], night)
-                transmission = load_from_cpickle(filename_rad, config_in['output'], night, lines_label, it_string)
+                transmission = load_from_cpickle(filename_rad, config_in['output'], night, it_string)
             except (FileNotFoundError, IOError):
                 print()
                 print("No transmission spectrum in {0:s}, no plots".format(reference))
@@ -638,13 +581,13 @@ def plot_transmission_spectrum(config_in, lines_label, night_input='', results_i
             ax1.set_ylim(0.925, 1.075)
             ax2.set_xlabel('$\lambda$ [$\AA$]')
             ax2.legend(loc=3)
-            ax1.set_title('Lines: {0:s} Night: {1:s} \n In-transit transmission spectrum in {2:s} \n Solution {3:s}'.format(
-                lines_label, night, reference, results_selection))
+            ax1.set_title('Night: {0:s} \n In-transit transmission spectrum in {1:s} \n Solution {2:s}'.format(
+                night, reference, results_selection))
             ax2.set_title('Out-transit transmission spectrum in {0:s}'.format(reference))
             try:
-                ax1.set_xlim(lines_dict['plot_range'][0], lines_dict['plot_range'][1])
+                ax1.set_xlim(fullspectrum_dict['plot_range'][0], fullspectrum_dict['plot_range'][1])
             except:
-                ax1.set_xlim(lines_dict['range'][0], lines_dict['range'][1])
+                ax1.set_xlim(transmission['range'][0], transmission['range'][1])
 
             sm = plt.cm.ScalarMappable(cmap=color_cmap, norm=color_norm)
             sm.set_array([])  # You have to set a dummy-array for this to work...
@@ -653,7 +596,7 @@ def plot_transmission_spectrum(config_in, lines_label, night_input='', results_i
             fig.subplots_adjust(wspace=0.05, hspace=0.4)
 
             output_file = get_filename(filename_rad + '_observations',
-                                       config_in['output'], night, lines_label, it_string, extension='.pdf')
+                                       config_in['output'], night, it_string=it_string, extension='.pdf')
             plt.savefig('plots/'+output_file, bbox_inches='tight', dpi=300)
             if interactive_plots:
                 plt.show()
@@ -714,8 +657,8 @@ def plot_transmission_spectrum(config_in, lines_label, night_input='', results_i
             ax1.set_ylim(0.99, 1.01)
             ax2.set_xlabel('$\lambda$ [$\AA$]')
             ax2.legend(loc=3)
-            ax1.set_title('Lines: {0:s} Night: {1:s} \n In-transit transmission spectrum in {2:s} \n Solution {3:s}'.format(
-                lines_label, night, reference, results_selection))
+            ax1.set_title('Night: {0:s} \n In-transit transmission spectrum in {1:s} \n Solution {2:s}'.format(
+                night, reference, results_selection))
             ax2.set_title('Out-transit transmission spectrum in {0:s}'.format(reference))
 
             sm = plt.cm.ScalarMappable(cmap=color_cmap, norm=color_norm)
@@ -725,13 +668,13 @@ def plot_transmission_spectrum(config_in, lines_label, night_input='', results_i
             fig.subplots_adjust(wspace=0.05, hspace=0.4)
 
             try:
-                ax1.set_xlim(lines_dict['plot_range'][0], lines_dict['plot_range'][1])
+                ax1.set_xlim(fullspectrum_dict['plot_range'][0], fullspectrum_dict['plot_range'][1])
             except:
-                ax1.set_xlim(lines_dict['range'][0], lines_dict['range'][1])
+                ax1.set_xlim(transmission['range'][0], transmission['range'][1])
 
             #ax1.set_xlim(config_in['master-out']['wavelength_range'][0], config_in['master-out']['wavelength_range'][1])
             output_file = get_filename(filename_rad + '_binned',
-                                       config_in['output'], night, lines_label, it_string, extension='.pdf')
+                                       config_in['output'], night, it_string=it_string, extension='.pdf')
             plt.savefig('plots/'+output_file, bbox_inches='tight', dpi=300)
             if interactive_plots:
                 plt.show()
@@ -774,13 +717,13 @@ def plot_transmission_spectrum(config_in, lines_label, night_input='', results_i
 
             ax2.set_xlabel('$\lambda$ [$\AA$]')
             ax2.legend(loc=3)
-            ax1.set_title('Lines: {0:s} Night: {1:s} \n CLV-RM correction in {2:s} \n Solution {3:s}'.format(
-                lines_label, night, reference, results_selection))
+            ax1.set_title('Night: {0:s} \n CLV-RM correction in {1:s} \n Solution {2:s}'.format(
+                night, reference, results_selection))
             ax2.set_title('Out-transit transmission spectrum in {0:s}'.format(reference))
             try:
-                ax1.set_xlim(lines_dict['plot_range'][0], lines_dict['plot_range'][1])
+                ax1.set_xlim(fullspectrum_dict['plot_range'][0], fullspectrum_dict['plot_range'][1])
             except:
-                ax1.set_xlim(lines_dict['range'][0], lines_dict['range'][1])
+                ax1.set_xlim(transmission['range'][0], transmission['range'][1])
 
             sm = plt.cm.ScalarMappable(cmap=color_cmap, norm=color_norm)
             sm.set_array([])  # You have to set a dummy-array for this to work...
@@ -789,7 +732,7 @@ def plot_transmission_spectrum(config_in, lines_label, night_input='', results_i
             fig.subplots_adjust(wspace=0.05, hspace=0.4)
 
             output_file = get_filename(filename_rad + '_clv_rm_models',
-                                       config_in['output'], night, lines_label, it_string, extension='.pdf')
+                                       config_in['output'], night, it_string=it_string, extension='.pdf')
             plt.savefig('plots/'+output_file, bbox_inches='tight', dpi=300)
             if interactive_plots:
                 plt.show()

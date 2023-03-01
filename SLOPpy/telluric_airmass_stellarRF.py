@@ -93,6 +93,8 @@ def compute_telluric_stellarRF(config_in, **kwargs):
             processed[obs]['flux'] = input_data[obs]['e2ds']/calib_data['blaze']/input_data[obs]['step']
             processed[obs]['flux_err'] = np.sqrt(input_data[obs]['e2ds'])/calib_data['blaze']/input_data[obs]['step']
 
+            preserve_flux = input_data[obs].get('absolute_flux', True)
+
             processed[obs]['flux_SRF'] = \
                 rebin_2d_to_1d(input_data[obs]['wave'],
                                input_data[obs]['step'],
@@ -100,6 +102,7 @@ def compute_telluric_stellarRF(config_in, **kwargs):
                                calib_data['blaze'],
                                input_data['coadd']['wave'],
                                input_data['coadd']['step'],
+                               preserve_flux=preserve_flux,
                                rv_shift=observational_pams[obs]['rv_shift_ORF2SRF_mod'])
 
             processed[obs]['flux_SRF_err'] = \
@@ -109,6 +112,7 @@ def compute_telluric_stellarRF(config_in, **kwargs):
                                calib_data['blaze'],
                                input_data['coadd']['wave'],
                                input_data['coadd']['step'],
+                               preserve_flux=preserve_flux,
                                rv_shift=observational_pams[obs]['rv_shift_ORF2SRF_mod'],
                                is_error=True)
 

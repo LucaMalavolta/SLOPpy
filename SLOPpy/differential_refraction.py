@@ -55,7 +55,6 @@ def compute_differential_refraction(config_in, append_name=None):
                                            use_refraction=False)
         observational_pams = load_from_cpickle('observational_pams', config_in['output'], night)
 
-
         preparation = load_from_cpickle(filename + '_preparation', config_in['output'], night)
 
         defined_reference = night_dict[night]['refraction'].get('reference', False)
@@ -85,15 +84,13 @@ def compute_differential_refraction(config_in, append_name=None):
             'binned': {}
         }
 
-
         refraction['binned']['wave'] = np.arange(preparation['coadd']['wave'][0],
                                                  preparation['coadd']['wave'][-11],
                                                  20.*preparation['coadd']['step'][0], dtype=np.double)
 
         refraction['binned']['size'] = np.size(refraction['binned']['wave'])
-        refraction['binned']['step'] = np.ones(refraction['binned']['size'] , dtype=np.double) \
-                                          * 20. *preparation['coadd']['step'][0]
-
+        refraction['binned']['step'] = np.ones(refraction['binned']['size'], dtype=np.double) \
+            * 20. * preparation['coadd']['step'][0]
 
         if refraction_dict['approach'] == 'full_spectrum':
             print("  Differential refraction performed over the full spectrum")
@@ -170,8 +167,8 @@ def compute_differential_refraction(config_in, append_name=None):
                         if n_iter < refraction_dict['fit_iters'] - 1:
                             std = np.std(processed[obs]['residuals'])
                             refraction[obs]['fit_flag'] = (refraction[obs]['fit_flag']) \
-                                                        & (np.abs(processed[obs]['residuals']) <
-                                                            refraction_dict['fit_sigma'] * std)
+                                & (np.abs(processed[obs]['residuals']) <
+                                   refraction_dict['fit_sigma'] * std)
 
                 elif refraction_dict['method'] == 'polynomial':
 
@@ -193,8 +190,8 @@ def compute_differential_refraction(config_in, append_name=None):
                         if n_iter < refraction_dict['fit_iters'] - 1:
                             std = np.std(processed[obs]['residuals'])
                             refraction[obs]['fit_flag'] = (refraction[obs]['fit_flag']) \
-                                                          & (np.abs(processed[obs]['residuals']) <
-                                                             refraction_dict['fit_sigma'] * std)
+                                & (np.abs(processed[obs]['residuals']) <
+                                   refraction_dict['fit_sigma'] * std)
 
                 """ Going back to the observer RF and rebinning the polynomial fit into the observed orders """
                 refraction[obs]['fit_e2ds'] = \
@@ -217,14 +214,14 @@ def compute_differential_refraction(config_in, append_name=None):
                                                                     less_than=0.001)
 
                 processed[obs]['flux_rebinned_stellarRF_corrected'] = preparation[obs]['flux_rebinned_stellarRF'] \
-                                                                      / refraction[obs]['fit_s1d']
+                    / refraction[obs]['fit_s1d']
                 refraction[obs]['binned_residuals'] = \
                     rebin_1d_to_1d(processed['coadd']['wave'],
-                                    processed['coadd']['step'],
-                                    processed[obs]['residuals'],
-                                    refraction['binned']['wave'],
-                                    refraction['binned']['step'],
-                                    preserve_flux=False)
+                                   processed['coadd']['step'],
+                                   processed[obs]['residuals'],
+                                   refraction['binned']['wave'],
+                                   refraction['binned']['step'],
+                                   preserve_flux=False)
 
         elif approach == 'individual_order':
 
@@ -241,6 +238,7 @@ def compute_differential_refraction(config_in, append_name=None):
                     rv_shift = observational_pams[obs]['rv_shift_ORF2SRF_mod']
 
                 """ Going back to the observer RF and rebinning the spectrum into the observed orders """
+                preserve_flux = input_data[obs].get('absolute_flux', True)
                 # processed[obs]['master_flux'] = \
                 processed[obs]['master_flux'] = \
                     rebin_1d_to_2d(preparation['coadd']['wave'],
@@ -248,6 +246,7 @@ def compute_differential_refraction(config_in, append_name=None):
                                    preparation['coadd']['rescaled'],
                                    input_data[obs]['wave'],
                                    input_data[obs]['step'],
+                                   preserve_flux=preserve_flux,
                                    rv_shift=-rv_shift)
 
                 # processed[obs]['master_ferr'] = \
@@ -257,6 +256,7 @@ def compute_differential_refraction(config_in, append_name=None):
                                    preparation['coadd']['rescaled_err'],
                                    input_data[obs]['wave'],
                                    input_data[obs]['step'],
+                                   preserve_flux=preserve_flux,
                                    rv_shift=-rv_shift,
                                    is_error=True)
 
@@ -269,8 +269,8 @@ def compute_differential_refraction(config_in, append_name=None):
                 # processed[obs]['ratio'] = preparation[obs]['rescaled_blazed'] / master_flux
 
                 processed[obs]['ratio'] = input_data[obs]['e2ds'] \
-                                          / preparation[obs]['rescaling'] \
-                                          / (processed[obs]['master_flux'] * calib_data['blaze'])
+                    / preparation[obs]['rescaling'] \
+                    / (processed[obs]['master_flux'] * calib_data['blaze'])
 
                 processed[obs]['ratio_err'] = processed[obs]['ratio'] * \
                     np.sqrt(preparation[obs]['rescaling']/input_data[obs]['e2ds']
@@ -317,8 +317,8 @@ def compute_differential_refraction(config_in, append_name=None):
                             if n_iter < refraction_dict['fit_iters'] - 1:
                                 std = np.std(processed[obs]['residuals'][order, :])
                                 refraction[obs]['fit_flag'][order, :] = (refraction[obs]['fit_flag'][order, :]) \
-                                                                        & (np.abs(processed[obs]['residuals'][order, :]) <
-                                                                           refraction_dict['fit_sigma'] * std)
+                                    & (np.abs(processed[obs]['residuals'][order, :]) <
+                                       refraction_dict['fit_sigma'] * std)
 
                     elif refraction_dict['method'] == 'polynomial':
                         refraction[obs]['fit_flag'][order, :50] = False
@@ -341,13 +341,13 @@ def compute_differential_refraction(config_in, append_name=None):
                             if n_iter < refraction_dict['fit_iters'] - 1:
                                 std = np.std(processed[obs]['residuals'][order, :])
                                 refraction[obs]['fit_flag'][order, :] = (refraction[obs]['fit_flag'][order, :]) \
-                                                                        & (np.abs(processed[obs]['residuals'][order, :]) <
-                                                                           refraction_dict['fit_sigma'] * std)
+                                    & (np.abs(processed[obs]['residuals'][order, :]) <
+                                       refraction_dict['fit_sigma'] * std)
 
                 e2ds_corrected = input_data[obs]['e2ds'] / refraction[obs]['fit_e2ds']
                 e2ds_corrected_err = input_data[obs]['e2ds_err'] / refraction[obs]['fit_e2ds']
 
-                # processed[obs]['flux_rebinned_stellarRF_corrected'] = \
+                preserve_flux = input_data[obs].get('absolute_flux', True)
                 processed[obs]['flux_rebinned_stellarRF_corrected'] = \
                     rebin_2d_to_1d(input_data[obs]['wave'],
                                    input_data[obs]['step'],
@@ -355,6 +355,7 @@ def compute_differential_refraction(config_in, append_name=None):
                                    calib_data['blaze'],
                                    processed['coadd']['wave'],
                                    input_data['coadd']['step'],
+                                   preserve_flux=preserve_flux,
                                    rv_shift=rv_shift)
 
                 processed[obs]['err_flux_rebinned_stellarRF_corrected'] = \
@@ -364,11 +365,12 @@ def compute_differential_refraction(config_in, append_name=None):
                                    calib_data['blaze'],
                                    processed['coadd']['wave'],
                                    input_data['coadd']['step'],
+                                   preserve_flux=preserve_flux,
                                    rv_shift=rv_shift,
                                    is_error=True)
 
                 processed[obs]['flux_rebinned_stellarRF_corrected'], \
-                processed[obs]['err_flux_rebinned_stellarRF_corrected'], _ = \
+                    processed[obs]['err_flux_rebinned_stellarRF_corrected'], _ = \
                     replace_values_errors_with_interpolation_1d(processed[obs]['flux_rebinned_stellarRF_corrected'],
                                                                 processed[obs]['err_flux_rebinned_stellarRF_corrected'],
                                                                 less_than=0.001)
@@ -376,13 +378,12 @@ def compute_differential_refraction(config_in, append_name=None):
                 refraction[obs]['binned_residuals'] = \
                     rebin_2d_to_1d(input_data[obs]['wave'],
                                    input_data[obs]['step'],
-                                    processed[obs]['residuals'],
-                                    np.ones_like(processed[obs]['residuals']),
-                                    refraction['binned']['wave'],
-                                    refraction['binned']['step'],
-                                    rv_shift=0.0000,
-                                    preserve_flux=False)
-
+                                   processed[obs]['residuals'],
+                                   np.ones_like(processed[obs]['residuals']),
+                                   refraction['binned']['wave'],
+                                   refraction['binned']['step'],
+                                   rv_shift=0.0000,
+                                   preserve_flux=False)
 
         else:
             print("   Please choose either full_spectrum or individual_order as preferred approach")
@@ -407,7 +408,6 @@ def compute_differential_refraction(config_in, append_name=None):
         else:
             save_to_cpickle('refraction_processed', processed, config_in['output'], night)
             save_to_cpickle('refraction', refraction, config_in['output'], night)
-
 
 
 def plot_differential_refraction(config_in, night_input='', append_name=None):
@@ -460,7 +460,7 @@ def plot_differential_refraction(config_in, night_input='', append_name=None):
             shrink_factor = 4
             if input_data[obs]['n_orders'] > shrink_factor:
                 factor = (input_data[obs]['n_orders'] * input_data[obs]['n_pixels']) \
-                         // (input_data[obs]['n_pixels'] * shrink_factor)
+                    // (input_data[obs]['n_pixels'] * shrink_factor)
                 flag_e2ds[obs] = (np.random.choice(a=([False] * (factor-1)) + [True],
                                                    size=(input_data[obs]['n_orders'], input_data[obs]['n_pixels'])))
 
@@ -469,7 +469,7 @@ def plot_differential_refraction(config_in, night_input='', append_name=None):
 
             else:
                 flag_e2ds[obs] = np.ones([input_data[obs]['n_orders'], input_data[obs]['n_pixels']], dtype=bool)
-                flag_coadd[obs] =  np.ones(input_data['coadd']['size'], dtype=bool)
+                flag_coadd[obs] = np.ones(input_data['coadd']['size'], dtype=bool)
 
         fig = plt.figure(figsize=(12, 6))
         gs = GridSpec(2, 2, width_ratios=[50, 1])
@@ -484,15 +484,18 @@ def plot_differential_refraction(config_in, night_input='', append_name=None):
 
             if i == 0:
                 ax1.scatter(preparation['coadd']['wave'][flag_coadd[obs]],
-                            preparation[obs]['flux_rebinned_stellarRF'][flag_coadd[obs]] / preparation[obs]['rescaling'],
+                            preparation[obs]['flux_rebinned_stellarRF'][flag_coadd[obs]] /
+                            preparation[obs]['rescaling'],
                             c=colors_scatter['mBJD'][obs], s=2, alpha=0.2, label='observation (SRF)')
             else:
                 ax1.scatter(preparation['coadd']['wave'][flag_coadd[obs]],
-                            preparation[obs]['flux_rebinned_stellarRF'][flag_coadd[obs]] / preparation[obs]['rescaling'],
+                            preparation[obs]['flux_rebinned_stellarRF'][flag_coadd[obs]] /
+                            preparation[obs]['rescaling'],
                             c=colors_scatter['mBJD'][obs], s=2, alpha=0.2)
 
             ax2.scatter(processed['coadd']['wave'][flag_coadd[obs]],
-                        processed[obs]['flux_rebinned_stellarRF_corrected'][flag_coadd[obs]] / preparation[obs]['rescaling'],
+                        processed[obs]['flux_rebinned_stellarRF_corrected'][flag_coadd[obs]] /
+                        preparation[obs]['rescaling'],
                         c=colors_scatter['mBJD'][obs], s=3, alpha=0.2)
 
         ax1.plot(preparation['coadd']['wave'], preparation['coadd']['rescaled'], c='k', lw=1, alpha=0.5,
@@ -557,7 +560,7 @@ def plot_differential_refraction(config_in, night_input='', append_name=None):
 
         ax.set_ylim(y_limits_offset)
         ax.set_xlabel('$\lambda$ [$\AA$]')
-        #ax.legend(loc=3)
+        # ax.legend(loc=3)
         ax.set_title('Night: {0:s} \n Differential refraction correction - Fit of the ratio obs/master'.format(night))
 
         sm = plt.cm.ScalarMappable(cmap=colors_properties['cmap'], norm=colors_properties['norm']['mBJD'])
@@ -608,7 +611,7 @@ def plot_differential_refraction(config_in, night_input='', append_name=None):
 
         ax.set_ylim(y_limits_offset)
         ax.set_xlabel('$\lambda$ [$\AA$]')
-        #ax.legend(loc=3)
+        # ax.legend(loc=3)
         ax.set_title(
             'Night: {0:s} \n Differential refraction correction - Residuals of the fit on ratio obs/master'.format(
                 night))

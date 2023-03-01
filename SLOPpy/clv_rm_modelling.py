@@ -12,6 +12,7 @@ __all__ = ['compute_clv_rm_modelling', 'plot_clv_rm_modelling']
 
 subroutine_name = 'clv_rm_modelling'
 
+### OLD modelling without the dependency on the planetar yradius at a given wavelngth
 
 def compute_clv_rm_modelling(config_in):
     night_dict = from_config_get_nights(config_in)
@@ -37,7 +38,7 @@ def compute_clv_rm_modelling(config_in):
         print()
 
         """
-        Loading the spectral synthesis results, at the moment only SME output is supported. 
+        Loading the spectral synthesis results, at the moment only SME output is supported.
         Properties of the synthesis data files
         - limb_angles: this is an input to SME, so it is specific on how the synthesis has been performed
         - spectra: stellar spectrum as a function of the limb angle, sampled near the spectral lines
@@ -115,7 +116,7 @@ def compute_clv_rm_modelling(config_in):
                                    dtype=np.double)  # initialization of the matrix with the mu values
         star_grid['mu'][star_grid['inside']] = np.sqrt(1. - star_grid['rc'][star_grid['inside']] ** 2)
 
-        """  2.2 Determine the Doppler shift to apply to the spectrum of each grid cell, from Cegla+2015 """
+        """  2.2 Determine the Doppler shift to apply to the spectrum of each grid cell, from Cegla+2016 """
 
         star_grid['x_ortho'] = star_grid['xc'] * np.cos(star_dict['lambda'][0] * deg2rad) \
                                - star_grid['yc'] * np.sin(
@@ -128,7 +129,7 @@ def compute_clv_rm_modelling(config_in):
                                         dtype=np.double)  # initialization of the matrix
         star_grid['z_ortho'][star_grid['inside']] = np.sqrt(1 - star_grid['r_ortho'][star_grid['inside']] ** 2)
 
-        """ rotate the coordinate system around the x_ortho axis by an agle: """
+        """ rotate the coordinate system around the x_ortho axis by an angle: """
         star_grid['beta'] = (np.pi / 2.) - star_dict['inclination'][0] * deg2rad
 
         """ orthogonal distance from the stellar equator """
@@ -232,10 +233,10 @@ def compute_clv_rm_modelling(config_in):
             n_oversampling = int(observational_pams[obs]['EXPTIME'] / clv_rm_dict['time_step'])
 
             if n_oversampling % 2 == 0:  n_oversampling += 1
-            delta_step = observational_pams[obs]['EXPTIME'] / n_oversampling / 86400.
+            half_time = observational_pams[obs]['EXPTIME'] / 2 / 86400.
 
-            processed[obs]['bjd_oversampling'] = np.linspace(observational_pams[obs]['BJD'] - delta_step,
-                                                             observational_pams[obs]['BJD'] + delta_step,
+            processed[obs]['bjd_oversampling'] = np.linspace(observational_pams[obs]['BJD'] - half_time,
+                                                             observational_pams[obs]['BJD'] + half_time,
                                                              n_oversampling, dtype=np.double)
 
             if planet_dict['orbit'] == 'circular':
@@ -290,7 +291,7 @@ def compute_clv_rm_modelling(config_in):
                     for x in range(0, star_grid['n_grid']):
                         for y in range(0, star_grid['n_grid']):
 
-                            # skip the step if the cell is outside the stellar disk 
+                            # skip the step if the cell is outside the stellar disk
                             # or if the cell is not shadowed by the planet
                             if star_grid['outside'][y, x] or rd[y, x] > planet_dict['radius_ratio'][0]: continue
 
@@ -303,7 +304,7 @@ def compute_clv_rm_modelling(config_in):
                                                       method='exact_flux',
                                                       preserve_flux=False)
 
-                            # fixing zero values that may have been introduced by 
+                            # fixing zero values that may have been introduced by
                             # the rebinning process from an extremely irregular sampling
 
                             ind_sel = np.where(flux_tmp < 0.)[0]

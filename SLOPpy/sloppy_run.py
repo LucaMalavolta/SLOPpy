@@ -29,8 +29,8 @@ def sloppy_run():
     """ creation of the pickle files """
     SLOPpy.prepare_datasets(config_in)
 
-    """ Retrieving the dictionary with the pipeline recipes """
-    pipeline = config_in['pipeline']
+    #""" Retrieving the dictionary with the pipeline recipes """
+    #pipeline = config_in['pipeline']
 
     """ Recipes must be performed in a given order... that's why we must use and ordered dictionary"""
     """ Each of the following recipes has to be performed on the whole spectrum """
@@ -83,6 +83,12 @@ def sloppy_run():
 
     pipeline_common_routines['clv_rm_models'] = SLOPpy.compute_clv_rm_models
     pipeline_common_routines['transmission_spectrum_preparation'] = SLOPpy.compute_transmission_spectrum_preparation
+
+    pipeline_common_routines['write_output_transmission'] = SLOPpy.write_output_transmission
+    pipeline_common_routines['write_output_transmission_stellarRF'] = SLOPpy.write_output_transmission_stellarRF
+    pipeline_common_routines['write_output_transmission_planetRF'] = SLOPpy.write_output_transmission_planetRF
+    pipeline_common_routines['write_output_transmission_observerRF'] = SLOPpy.write_output_transmission_observerRF
+
 
     """ Legacy routines for testing purposes """
     pipeline_routines = collections.OrderedDict()
@@ -208,6 +214,8 @@ def sloppy_run():
     plot_routines = collections.OrderedDict()
 
     plot_routines['plot_dataset'] = SLOPpy.plot_dataset
+    plot_routines['prepare_dataset'] = SLOPpy.plot_dataset
+    plot_routines['dataset'] = SLOPpy.plot_dataset
     plot_routines['sky_correction'] = SLOPpy.plot_sky_correction
 
     plot_routines['differential_refraction'] = SLOPpy.plot_differential_refraction
@@ -308,7 +316,7 @@ def sloppy_run():
     plot_lines_average_routines = collections.OrderedDict()
 
     # ! These should be removed and performed line by line !
-    
+
     plot_lines_average_routines['transmission_binned_mcmc'] = SLOPpy.plot_transmission_binned_mcmc
     plot_lines_average_routines['transmission_spectrum_average_planetRF'] = SLOPpy.plot_transmission_spectrum_average_planetRF
     plot_lines_average_routines['transmission_spectrum_average_observerRF'] = SLOPpy.plot_transmission_spectrum_average_observerRF
@@ -358,14 +366,21 @@ def sloppy_run():
     print()
     print("*** Data preparation analysis ***")
 
-    for key in config_in['pipeline']:
+    try:
+        pipeline = config_in['pipeline']
+        has_plots = len(pipeline)
+    except (KeyError, TypeError):
+        pipeline = {}
+
+
+    for key in pipeline:
         if key in pipeline_common_routines:
             print()
             pipeline_common_routines[key](config_in)
 
 
     # ! Kept here for legacy purposes !
-    for key in config_in['pipeline']:
+    for key in pipeline:
         if key in pipeline_routines:
             print()
             pipeline_routines[key](config_in)
@@ -374,8 +389,15 @@ def sloppy_run():
     print()
     print("*** Spectral lines analysis  ***")
 
-    for lines_label in config_in['spectral_lines']:
-        for key in config_in['pipeline']:
+
+    try:
+        spectral_lines = config_in['spectral_lines']
+        has_plots = len(spectral_lines)
+    except (KeyError, TypeError):
+        pipeline = {}
+
+    for lines_label in spectral_lines:
+        for key in pipeline:
             if key in pipeline_lines_routines:
                 print()
                 pipeline_lines_routines[key](config_in, lines_label)

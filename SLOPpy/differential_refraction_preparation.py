@@ -96,6 +96,8 @@ def compute_differential_refraction_preparation(config_in, append_name=None):
             else:
                 rv_shift = observational_pams[obs]['rv_shift_ORF2SRF_mod']
 
+            preserve_flux = input_data[obs].get('absolute_flux', True)
+
             preparation[obs]['flux_rebinned_stellarRF'] = \
                 rebin_2d_to_1d(input_data[obs]['wave'],
                                input_data[obs]['step'],
@@ -103,6 +105,7 @@ def compute_differential_refraction_preparation(config_in, append_name=None):
                                calib_data['blaze'],
                                preparation['coadd']['wave'],
                                preparation['coadd']['step'],
+                               preserve_flux=preserve_flux,
                                rv_shift=rv_shift)
 
             err_flux_rebinned_SRF = \
@@ -112,6 +115,7 @@ def compute_differential_refraction_preparation(config_in, append_name=None):
                                calib_data['blaze'],
                                preparation['coadd']['wave'],
                                preparation['coadd']['step'],
+                               preserve_flux=preserve_flux,
                                rv_shift=rv_shift,
                                is_error=True)
 
@@ -130,7 +134,9 @@ def compute_differential_refraction_preparation(config_in, append_name=None):
             #                      observational_pams['wavelength_rescaling'])
             #
 
-            """ Zero or negative values are identified, flagged and substituted with another value """
+            """ Zero or negative values are identified, flagged and substituted
+            with another value """
+
             preparation[obs]['flux_rebinned_stellarRF'], \
             err_flux_rebinned_SRF, \
             flux_rebinned_SRF_null = \

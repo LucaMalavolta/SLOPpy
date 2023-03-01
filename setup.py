@@ -11,11 +11,11 @@ long_description = (this_directory / "README.md").read_text()
 
 setup(
     name="SLOPpy-package",
-    version='1.0.2',
+    version='1.1',
     author="Daniela Sicilia, Luca Malavolta, et al.",
 	author_email = 'daniela.sicilia@inaf.it, luca.malavolta@unipd.it',
 	url = 'https://github.com/LucaMalavolta/SLOPpy',
-	packages =['SLOPpy', 'SLOPpy.subroutines'],
+	packages =['SLOPpy', 'SLOPpy.subroutines', 'SLOPpy.instruments'],
 	license = 'MIT License',
 	description ='SLOPpy: Spectral Lines Of Planets with python',
     long_description=long_description,

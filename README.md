@@ -21,9 +21,9 @@ Most of the information can be found in Sicilia et al. (2022) [A&A link](https:/
 
 **Note on the use of molecfit** 
 
-`SLOPpy` supports both the old version `1.5.7` (available as a stand-alone program) and the latest version `>4` through ESO esorex.
+`SLOPpy` supports both the old version `1.5.x` (available as a stand-alone program) and the latest version `>4` through ESO esorex.
 
-To use version 1.5.7, you have to use the molecfit modules marked with `v1`, and specify the installation path under the `molecfit` section:
+To use version 1.5.x, you have to use the molecfit modules marked with `v1`, and specify the installation path under the `molecfit` section:
 
 ```bash
 pipeline:
@@ -62,9 +62,10 @@ This new keyword specify the location of the `esorex` executable: if the command
 
     Added support to AER v3.8, bundled with Molecfit as in November 2022 \
     To use version 3.6, add this keyword in the configuration file under the molecfit section:\
+    NOTE: it must be a string and not a number\
 
     ```bash
-        aer_version: 3.6
+        aer_version: "3.6"
     ```
 
 - Version 1.0: first release after acceptance of the paper.

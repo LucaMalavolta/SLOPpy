@@ -74,6 +74,7 @@ def compute_differential_refraction(config_in):
 
                 """ Rebinning of the spectra in the SRF, except for a fixed constant in order to minimize
                     the difference between  """
+                preserve_flux = input_data[obs].get('absolute_flux', True)
 
                 processed[obs]['flux_rebinned_stellarRF'] = \
                     rebin_2d_to_1d(input_data[obs]['wave'],
@@ -82,6 +83,7 @@ def compute_differential_refraction(config_in):
                                    calib_data['blaze'],
                                    processed['coadd']['wave'],
                                    processed['coadd']['step'],
+                                   preserve_flux=preserve_flux,
                                    rv_shift=observational_pams[obs]['rv_shift_ORF2SRF_mod'])
 
                 processed[obs]['err_flux_rebinned_SRF'] = \
@@ -91,6 +93,7 @@ def compute_differential_refraction(config_in):
                                    calib_data['blaze'],
                                    processed['coadd']['wave'],
                                    processed['coadd']['step'],
+                                   preserve_flux=preserve_flux,
                                    rv_shift=observational_pams[obs]['rv_shift_ORF2SRF_mod'],
                                    is_error=True)
 
@@ -157,6 +160,8 @@ def compute_differential_refraction(config_in):
 
             print("  Division by reference spectrum and fit of the flux variation: ", obs)
 
+            preserve_flux = input_data[obs].get('absolute_flux', True)
+
             """ Going back to the observer RF and rebinning the spectrum into the observed orders """
             processed[obs]['master_flux'] = \
                 rebin_1d_to_2d(processed['coadd']['wave'],
@@ -164,6 +169,7 @@ def compute_differential_refraction(config_in):
                                processed['coadd']['rescaled'],
                                input_data[obs]['wave'],
                                input_data[obs]['step'],
+                               preserve_flux=preserve_flux,
                                rv_shift=-observational_pams[obs]['rv_shift_ORF2SRF_mod'])
 
             processed[obs]['master_ferr'] = \
@@ -172,6 +178,7 @@ def compute_differential_refraction(config_in):
                                processed['coadd']['rescaled_err'],
                                input_data[obs]['wave'],
                                input_data[obs]['step'],
+                               preserve_flux=preserve_flux,
                                rv_shift=-observational_pams[obs]['rv_shift_ORF2SRF_mod'],
                                is_error=True)
 
@@ -224,6 +231,8 @@ def compute_differential_refraction(config_in):
             processed[obs]['e2ds_corrected'] = input_data[obs]['e2ds'] / refraction[obs]['polyfit_e2ds']
             processed[obs]['e2ds_corrected_err'] = input_data[obs]['e2ds_err'] / refraction[obs]['polyfit_e2ds']
 
+            preserve_flux = input_data[obs].get('absolute_flux', True)
+
             processed[obs]['flux_rebinned_stellarRF_corrected'] = \
                 rebin_2d_to_1d(input_data[obs]['wave'],
                                input_data[obs]['step'],
@@ -231,6 +240,7 @@ def compute_differential_refraction(config_in):
                                calib_data['blaze'],
                                processed['coadd']['wave'],
                                processed['coadd']['step'],
+                               preserve_flux=preserve_flux,
                                rv_shift=observational_pams[obs]['rv_shift_ORF2SRF_mod'])
 
             processed[obs]['err_flux_rebinned_SRF_corrected'] = \
@@ -240,6 +250,7 @@ def compute_differential_refraction(config_in):
                                calib_data['blaze'],
                                processed['coadd']['wave'],
                                processed['coadd']['step'],
+                               preserve_flux=preserve_flux,
                                rv_shift=observational_pams[obs]['rv_shift_ORF2SRF_mod'],
                                is_error=True)
 

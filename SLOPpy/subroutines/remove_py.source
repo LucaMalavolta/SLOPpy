@@ -1,0 +1,31 @@
+git rm bayesian_emcee.py
+git rm clv_rm_subroutines.py
+git rm common.py
+git rm eso_skycalc_cli.py
+git rm fit_subroutines.py
+git rm io_subroutines.py
+git rm kepler_exo.py
+git rm math_functions.py
+git rm mcmc_fit_functions.py
+git rm object_parameters.py
+git rm plot_subroutines.py
+git rm rebin_subroutines.py
+git rm shortcuts.py
+git rm smooth_subroutines.py
+git rm spectral_subroutines.py
+
+git mv bayesian_emcee.pyx        bayesian_emcee.py
+git mv clv_rm_subroutines.pyx    clv_rm_subroutines.py
+git mv common.pyx                common.py
+git mv eso_skycalc_cli.pyx       eso_skycalc_cli.py
+git mv fit_subroutines.pyx       fit_subroutines.py
+git mv io_subroutines.pyx        io_subroutines.py
+git mv kepler_exo.pyx            kepler_exo.py
+git mv math_functions.pyx        math_functions.py
+git mv mcmc_fit_functions.pyx    mcmc_fit_functions.py
+git mv object_parameters.pyx     object_parameters.py
+git mv plot_subroutines.pyx      plot_subroutines.py
+git mv rebin_subroutines.pyx     rebin_subroutines.py
+git mv shortcuts.pyx             shortcuts.py
+git mv smooth_subroutines.pyx    smooth_subroutines.py
+git mv spectral_subroutines.pyx  spectral_subroutines.py
