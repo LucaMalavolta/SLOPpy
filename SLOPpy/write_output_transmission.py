@@ -54,7 +54,6 @@ def write_output_transmission(config_in, reference='planetRF', night_input='', p
     fullspectrum_dict = from_config_get_fullspectrum_parameters(config_in)
 
     clv_rm_correction = fullspectrum_dict.get('clv_rm_correction', True)
-    normalize_transmission = norm_dict.get('normalize_transmission', True)
 
     norm_dict = fullspectrum_dict.get('normalization', {})
     norm_pams = {}
@@ -138,11 +137,11 @@ def write_output_transmission(config_in, reference='planetRF', night_input='', p
             try:
                 transmission = load_from_cpickle(subroutine_name+'_'+reference + '_' +
                                                  results_selection, config_in['output'], night, it_string=it_string)
-                print("{0:45s} Night:{1:15s}         {3:s}   {4:s}".format(
+                print("{0:45s} Night:{1:15s}         {2:s}   {3:s}".format(
                     subroutine_name, night, results_selection, 'Retrieved'))
                 continue
             except (FileNotFoundError, IOError):
-                print("{0:45s} Night:{1:15s}         {3:s}   {4:s}".format(
+                print("{0:45s} Night:{1:15s}         {2:s}   {3:s}".format(
                     subroutine_name, night, results_selection, 'Computing'))
 
             transmission = transmission_template.copy()
@@ -295,7 +294,7 @@ def write_output_transmission(config_in, reference='planetRF', night_input='', p
                         print('   *** No CLV correction')
 
 
-                if normalize_transmission:
+                if norm_pams['normalize_transmission']:
 
                     """ Continuum normalization preparatory steps:
                         1) exclusion of regions with lines of interes
@@ -316,6 +315,8 @@ def write_output_transmission(config_in, reference='planetRF', night_input='', p
                     """ Continuum normalization:
                         2) exclusion of regions with planetary lines, taking into account the planetary RV semi-amplitude
                     """
+                    #import matplotlib.pyplot as plt
+                    #plt.scatter(transmission['wave'],transmission[obs]['line_exclusion'], c='C0', s=1)
 
                     if clv_rm_correction:
                         stellar_spectrum_rebinned = rebin_1d_to_1d(clv_rm_models['common']['wave'],
@@ -329,11 +330,19 @@ def write_output_transmission(config_in, reference='planetRF', night_input='', p
                         stellar_spectrum_derivative = first_derivative(transmission['wave'], stellar_spectrum_rebinned)
 
                         cont_10perc = np.percentile(np.abs(stellar_spectrum_derivative), norm_pams['percentile_selection'])
-
+                        #print(cont_10perc)
                         transmission[obs]['line_exclusion'] = transmission[obs]['line_exclusion'] \
                             & (np.abs(stellar_spectrum_derivative) < cont_10perc) \
                             & (stellar_spectrum_rebinned > norm_pams['lower_threshold'])
 
+                        #plt.plot(transmission['wave'],stellar_spectrum_rebinned)
+                        #sel1 =  (np.abs(stellar_spectrum_derivative) < cont_10perc)
+                        #sel2 = (stellar_spectrum_rebinned > norm_pams['lower_threshold'])
+                        #plt.scatter(transmission['wave'],transmission[obs]['line_exclusion'], c='C1', s=1)
+                        #plt.scatter(transmission['wave'],sel1 + 0.1, c='C2', s=1)
+                        #plt.scatter(transmission['wave'],sel2 + 0.2, c='C3', s=1)
+                        #plt.ylim(0,1.3)
+                        #plt.show()
                     elif print_warning:
                         print("   No stellar synthetic spectrum from CLV models")
                         print("   some stellar lines may be included in transmission normalization  ")
