@@ -150,7 +150,8 @@ def rebin_1d_to_1d(wave_in, step_in, flux_in, wave_out, step_out,
                    is_error=False,
                    quadrature=False,
                    preserve_flux=True,
-                   method='cubic_interpolation'):
+                   method='cubic_interpolation',
+                   reference_value=None):
 
     if is_error:
         quadrature = True
@@ -170,6 +171,11 @@ def rebin_1d_to_1d(wave_in, step_in, flux_in, wave_out, step_out,
     else:
         raise ValueError("method ", method, 'not supported by rebinning subroutine')
 
+
+    if reference_value :
+        wave_sel = (wave_out<=wave_in[0] +0.005 ) | (wave_out>=wave_in[-1] -0.005)
+        flux_out[wave_sel] = reference_value
+
     return flux_out
 
 
@@ -179,7 +185,8 @@ def rebin_2d_to_1d(wave_in, step_in, flux_in, blaze_in, wave_out, step_out,
                    quadrature=False,
                    preserve_flux=True,
                    skip_blaze_correction=False,
-                   method='cubic_interpolation'):
+                   method='cubic_interpolation',
+                   reference_value=None):
 
     """
     :param wave_in:
@@ -240,9 +247,12 @@ def rebin_2d_to_1d(wave_in, step_in, flux_in, blaze_in, wave_out, step_out,
                                                  quadrature=quadrature,
                                                  is_error=is_error,
                                                  preserve_flux=preserve_flux,
-                                                 method=method)
+                                                 method=method,
+                                                 reference_value=reference_value)
 
     flux_out = np.zeros(n_rebin, dtype=np.double)
+    if reference_value:
+        flux_out += reference_value
 
     if quadrature or is_error:
         flux_rebin_pix = np.power(flux_rebin_pix, 2)
@@ -291,7 +301,8 @@ def rebin_1d_to_2d(wave_in, step_in, flux_in, wave_out, step_out,
                    is_error=False,
                    quadrature=False,
                    preserve_flux=True,
-                   method='cubic_interpolation'):
+                   method='cubic_interpolation',
+                   reference_value=None):
     """
 
     :param wave_in:
@@ -316,6 +327,8 @@ def rebin_1d_to_2d(wave_in, step_in, flux_in, wave_out, step_out,
 
     o_axis, f_axis = np.shape(wave_out)
     flux_out = np.zeros([o_axis, f_axis], dtype=np.double)
+    if reference_value:
+        flux_out += reference_value
 
     for ii in range(0, o_axis):
         flux_out[ii, :]= rebin_1d_to_1d(wave_in,
@@ -326,7 +339,8 @@ def rebin_1d_to_2d(wave_in, step_in, flux_in, wave_out, step_out,
                                         quadrature=quadrature,
                                         is_error=is_error,
                                         preserve_flux=preserve_flux,
-                                        method=method)
+                                        method=method,
+                                        reference_value=reference_value)
 
 
     return flux_out
@@ -337,7 +351,8 @@ def rebin_2d_to_2d(wave_in, step_in, flux_in, wave_out, step_out,
                    is_error=False,
                    quadrature=False,
                    preserve_flux=True,
-                   method='cubic_interpolation'):
+                   method='cubic_interpolation',
+                   reference_value=None):
 
     """
     :param wave_in: 1D wavelength array of the input spectrum
@@ -367,7 +382,8 @@ def rebin_2d_to_2d(wave_in, step_in, flux_in, wave_out, step_out,
         raise ValueError("Mismatch between input and output number of orders in rebin_2d_to_2d")
 
     flux_out = np.zeros([o_axis, f_axis], dtype=np.double)
-
+    if reference_value:
+        flux_out += reference_value
 
     for ii in range(0, o_axis):
         flux_out[ii, :] = rebin_1d_to_1d(wave_in[ii, :],
@@ -378,6 +394,7 @@ def rebin_2d_to_2d(wave_in, step_in, flux_in, wave_out, step_out,
                                          quadrature=quadrature,
                                          is_error=is_error,
                                          preserve_flux=preserve_flux,
-                                         method=method)
+                                         method=method,
+                                         reference_value=reference_value)
 
     return flux_out

@@ -274,13 +274,11 @@ def write_output_transmission(config_in, reference='planetRF', night_input='', p
                                        transmission['wave'],
                                        transmission['step'],
                                        preserve_flux=False,
-                                       rv_shift=rv_shift_clv)
+                                       rv_shift=rv_shift_clv,
+                                       reference_value=1.)
 
-                    #import matplotlib.pyplot as plt
-                    #print(obs, planet_R_factor)
-                    #plt.plot(clv_rm_models['common']['wave'], transmission[obs]['clv_model_stellarRF'], zorder=100, c='C2')
-                    #plt.scatter(transmission['wave'], transmission[obs]['clv_model_rebinned'], s=2)
-                    # plt.show()
+                    "Fix to avoid divison by zero and border effects"
+
                     transmission[obs]['corrected'] = transmission[obs]['rebinned'] / \
                         transmission[obs]['clv_model_rebinned']
                     transmission[obs]['corrected_err'] = transmission[obs]['rebinned_err'] / \
@@ -328,17 +326,28 @@ def write_output_transmission(config_in, reference='planetRF', night_input='', p
                                                                 preserve_flux=False)
 
                         stellar_spectrum_derivative = first_derivative(transmission['wave'], stellar_spectrum_rebinned)
-                        
-                        keep_where_clv_is_missing = (np.abs(stellar_spectrum_rebinned) < 0.0001)
 
-
-                        cont_10perc = np.percentile(np.abs(stellar_spectrum_derivative), norm_pams['percentile_selection'])
+                        missing_model = (np.abs(stellar_spectrum_rebinned) < 0.0001)
+                        #plt.hist(stellar_spectrum_derivative, bins=250, range=(-.5,0.5), alpha=0.5)
+                        #plt.hist(np.abs(stellar_spectrum_derivative), bins=250, range=(-0.5,0.5), alpha=0.5)
+                        #plt.hist(np.abs(stellar_spectrum_derivative[~missing_model]), bins=250, range=(-0.5,0.5), alpha=0.5)
+                        #plt.show()
+                        cont_10perc = np.percentile(np.abs(stellar_spectrum_derivative[~missing_model]), norm_pams['percentile_selection'])
                         #print(cont_10perc)
-                        transmission[obs]['line_exclusion'] = transmission[obs]['line_exclusion'] \
-                            & ( keep_where_clv_is_missing | ((np.abs(stellar_spectrum_derivative) < cont_10perc) \
-                            & (stellar_spectrum_rebinned > norm_pams['lower_threshold'])))
+
+                        line_exclusion = transmission[obs]['line_exclusion'] \
+                            & (np.abs(stellar_spectrum_derivative) < cont_10perc) \
+                            & (stellar_spectrum_rebinned > norm_pams['lower_threshold'])
+
+                        if np.sum(line_exclusion) < len(line_exclusion)/200:
+                            transmission[obs]['line_exclusion'] = transmission[obs]['line_exclusion'] \
+                                & ( missing_model | ((np.abs(stellar_spectrum_derivative) < cont_10perc) \
+                                & (stellar_spectrum_rebinned > norm_pams['lower_threshold'])))
+                        else:
+                            transmission[obs]['line_exclusion'] = line_exclusion
 
                         #plt.plot(transmission['wave'],stellar_spectrum_rebinned)
+                        #plt.plot(transmission['wave'],stellar_spectrum_derivative, c='C1')
                         #sel1 =  (np.abs(stellar_spectrum_derivative) < cont_10perc)
                         #sel2 = (stellar_spectrum_rebinned > norm_pams['lower_threshold'])
                         #plt.scatter(transmission['wave'],transmission[obs]['line_exclusion'], c='C1', s=1)
@@ -346,6 +355,8 @@ def write_output_transmission(config_in, reference='planetRF', night_input='', p
                         #plt.scatter(transmission['wave'],sel2 + 0.2, c='C3', s=1)
                         #plt.ylim(0,1.3)
                         #plt.show()
+
+
                     elif print_warning:
                         print("   No stellar synthetic spectrum from CLV models")
                         print("   some stellar lines may be included in transmission normalization  ")
