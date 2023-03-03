@@ -325,7 +325,6 @@ def compute_clv_rm_models_lines(config_in, lines_label):
         wave_fix = wave_extension - wave_fix_convo*2
         exclude_borders = (clv_rm_models['common']['wave'] > line_iter_dict['range'][0]+wave_fix) & (clv_rm_models['common']['wave'] < line_iter_dict['range'][1]-wave_fix)
 
-            
         print('  Range for  continuum normalization: ',line_iter_dict['range'][0]-wave_fix, line_iter_dict['range'][1]+wave_fix)
 
         # Using only the 10percentile of values of the derivative around zero
@@ -338,6 +337,20 @@ def compute_clv_rm_models_lines(config_in, lines_label):
         print('  Number of points within 10percentile: {0:10.0f}'.format(np.sum((np.abs(clv_rm_models['common']['norm_convolved_derivative']) < cont_10perc))))
         print('  Number of points included in restricted borders: {0:10.0f}'.format(np.sum(exclude_borders)))
         print('  Number of points above threshold: {0:10.0f}'.format(np.sum( (clv_rm_models['common']['norm_convolved']> norm_pams['lower_threshold']))))
+
+        norm_convolved_bool = (np.abs(clv_rm_models['common']['norm_convolved_derivative']) < cont_10perc) \
+            & (exclude_borders) \
+            & (clv_rm_models['common']['norm_convolved']> norm_pams['lower_threshold'])
+
+        if np.sum(norm_convolved_bool) < np.sum(exclude_borders)/50:
+            print('  Lower threshold decreased by 80% to allow point selection ', norm_pams['lower_threshold']*0.80)
+
+            clv_rm_models['common']['norm_convolved_bool'] = (np.abs(clv_rm_models['common']['norm_convolved_derivative']) < cont_10perc) \
+                & (exclude_borders) & (clv_rm_models['common']['norm_convolved']> norm_pams['lower_threshold']*0.80)
+        else:
+            clv_rm_models['common']['norm_convolved_bool'] = norm_convolved_bool
+
+
         print('  Number of points for continuum normalization: {0:10.0f}'.format(np.sum(clv_rm_models['common']['norm_convolved_bool'])))
 
         processed = {}

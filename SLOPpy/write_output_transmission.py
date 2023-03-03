@@ -328,12 +328,8 @@ def write_output_transmission(config_in, reference='planetRF', night_input='', p
                         stellar_spectrum_derivative = first_derivative(transmission['wave'], stellar_spectrum_rebinned)
 
                         missing_model = (np.abs(stellar_spectrum_rebinned) < 0.0001)
-                        #plt.hist(stellar_spectrum_derivative, bins=250, range=(-.5,0.5), alpha=0.5)
-                        #plt.hist(np.abs(stellar_spectrum_derivative), bins=250, range=(-0.5,0.5), alpha=0.5)
-                        #plt.hist(np.abs(stellar_spectrum_derivative[~missing_model]), bins=250, range=(-0.5,0.5), alpha=0.5)
-                        #plt.show()
+
                         cont_10perc = np.percentile(np.abs(stellar_spectrum_derivative[~missing_model]), norm_pams['percentile_selection'])
-                        #print(cont_10perc)
 
                         line_exclusion = transmission[obs]['line_exclusion'] \
                             & (np.abs(stellar_spectrum_derivative) < cont_10perc) \

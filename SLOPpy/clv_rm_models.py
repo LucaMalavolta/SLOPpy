@@ -305,6 +305,20 @@ def compute_clv_rm_models(config_in):
         clv_rm_models['common']['norm_convolved_bool'] = (np.abs(clv_rm_models['common']['norm_convolved_derivative']) < cont_10perc) \
             & (clv_rm_models['common']['norm_convolved']> norm_pams['lower_threshold'])
 
+        print('  Number of points within 10percentile: {0:10.0f}'.format(np.sum((np.abs(clv_rm_models['common']['norm_convolved_derivative']) < cont_10perc))))
+        print('  Number of points above threshold: {0:10.0f}'.format(np.sum( (clv_rm_models['common']['norm_convolved']> norm_pams['lower_threshold']))))
+
+        norm_convolved_bool = (np.abs(clv_rm_models['common']['norm_convolved_derivative']) < cont_10perc) \
+            & (clv_rm_models['common']['norm_convolved']> norm_pams['lower_threshold'])
+
+        if np.sum(norm_convolved_bool) < 100:
+            print('  Lower threshold decreased by 80% to allow point selection ', norm_pams['lower_threshold']*0.80)
+
+            clv_rm_models['common']['norm_convolved_bool'] = (np.abs(clv_rm_models['common']['norm_convolved_derivative']) < cont_10perc) \
+                & (clv_rm_models['common']['norm_convolved']> norm_pams['lower_threshold']*0.80)
+        else:
+            clv_rm_models['common']['norm_convolved_bool'] = norm_convolved_bool
+
 
         processed = {}
 
