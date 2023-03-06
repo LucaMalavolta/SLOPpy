@@ -26,7 +26,7 @@ def compute_differential_refraction_preparation(config_in, append_name=None):
     reference_mask = np.ones([len(night_dict), shared_data['coadd']['size']], dtype=bool)
     compute_reference = False
 
-    """ make sure that all the spectra are computed in the same reference system is cross-calibrations is used"""
+    """ make sure that all the spectra are computed in the same reference system if cross-calibrations is used"""
     absolute_SRF = False
     for n_night, night in enumerate(night_dict):
         if night_dict[night]['refraction'].get('reference_night', False) \

@@ -377,11 +377,26 @@ def compute_transmission_spectrum(config_in, lines_label, reference='planetRF', 
 
                         stellar_spectrum_derivative = first_derivative(transmission['wave'], stellar_spectrum_rebinned)
 
+                        missing_model = (np.abs(stellar_spectrum_rebinned) < 0.0001)
+
                         cont_10perc = np.percentile(np.abs(stellar_spectrum_derivative), norm_pams['percentile_selection'])
 
-                        transmission[obs]['line_exclusion'] = transmission[obs]['line_exclusion'] \
+                        #transmission[obs]['line_exclusion'] = transmission[obs]['line_exclusion'] \
+                        #    & (np.abs(stellar_spectrum_derivative) < cont_10perc) \
+                        #    & (stellar_spectrum_rebinned > norm_pams['lower_threshold'])
+
+                        line_exclusion = transmission[obs]['line_exclusion'] \
                             & (np.abs(stellar_spectrum_derivative) < cont_10perc) \
                             & (stellar_spectrum_rebinned > norm_pams['lower_threshold'])
+
+                        if np.sum(line_exclusion) < len(line_exclusion)/200:
+                            transmission[obs]['line_exclusion'] = transmission[obs]['line_exclusion'] \
+                                & ( missing_model | ((np.abs(stellar_spectrum_derivative) < cont_10perc) \
+                                & (stellar_spectrum_rebinned > norm_pams['lower_threshold'])))
+                        else:
+                            transmission[obs]['line_exclusion'] = line_exclusion
+
+
 
                     elif print_warning:
                         print("   No stellar synthetic spectrum from CLV models")
