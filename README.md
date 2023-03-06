@@ -18,10 +18,10 @@ Paper accepted, repository now publicly available, documentation and examples co
 
 Basic [documentation available here](https://sloppy.readthedocs.io/en/latest/), updates will follow in the upcoming weeks.
 
-Most of the information can be found in Sicilia et al. (2022) [A&A link](https://doi.org/10.1051/0004-6361/202244055) [ADS link](https://ui.adsabs.harvard.edu/abs/2022arXiv220813045S/abstract) [arXiv link](https://arxiv.org/abs/2208.13045) 
+Most of the information can be found in Sicilia et al. (2022) [A&A link](https://doi.org/10.1051/0004-6361/202244055) [ADS link](https://ui.adsabs.harvard.edu/abs/2022arXiv220813045S/abstract) [arXiv link](https://arxiv.org/abs/2208.13045)
 
 
-**Note on the use of molecfit** 
+**Note on the use of molecfit**
 
 `SLOPpy` supports both the old version `1.5.x` (available as a stand-alone program) and the latest version `>4` through ESO esorex.
 
@@ -54,7 +54,13 @@ molecfit:
 This new keyword specify the location of the `esorex` executable: if the command is avaialble system-wide (i.e., you can launch esorex by simply writing `esorex` in your terminal), then it is not necessary to specify the full path of the excutable.
 
 
-**Changelog** 
+**Changelog**
+- Version 1.1.1, 1.1.2
+    Minor bugfix
+
+- Version 1.1.0
+    Easier interface for new instruments
+    New module to write transmisison spectra in the stellar reference system with (optional) CLV and RM correction: `write_output_transmission_stellarRF`. Note: CLV and RM correction only available through `CLV_RM_models` module
 
 - Version 1.0.2:
 

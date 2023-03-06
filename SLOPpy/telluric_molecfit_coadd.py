@@ -250,7 +250,7 @@ def compute_telluric_molecfit_coadd(config_in):
                 print('   Coadded spectrum: ', n_reference)
 
                 if os.path.exists(reference_dirname + 'TELLURIC_CORR.fits'):
-                    print('  molecfit for ' + reference_name + ' previously completed')
+                    print('      molecfit for ' + reference_name + ' previously completed')
                     print()
                 else:
 
@@ -319,7 +319,7 @@ def compute_telluric_molecfit_coadd(config_in):
 
                 for dirname, exename in zip(observations_dirlist, observations_exelist):
                     if os.path.exists(dirname + 'TELLURIC_CORR.fits'):
-                        print('  molecfit for ' + dirname + ' previously completed')
+                        print('      molecfit for ' + dirname + ' previously completed')
                         print()
                     else:
                         os.system('. ' + exename)
@@ -329,11 +329,15 @@ def compute_telluric_molecfit_coadd(config_in):
                 texp_total -= texp_cumulated
                 texp_cumulated = 0.0
 
+        print()
+
         for n_obs, obs in enumerate(lists['observations']):
 
             telluric[obs] = {}
-
             observation_dirname = processed[obs]['dir_name']
+
+            print('  Telluric correction for ', obs, 'retrieved from ', observation_dirname + 'TELLURIC_CORR.fits')
+
             """ Loading the telluric spectrum from the output directory of molecfit """
             corr_fits = fits.open(observation_dirname + 'TELLURIC_CORR.fits')
             # orig_fits = fits.open(observation_dirname + observation_tabname)
@@ -341,7 +345,7 @@ def compute_telluric_molecfit_coadd(config_in):
             """ rebinning onto the e2ds wave scale"""
 
             if molecfit_dict.get('fix_telluric', True):
-                print('  fix_telluric applied -  temporary workaround for line at 5885.97 A [ORF]')
+                print('      fix_telluric applied -  temporary workaround for line at 5885.97 A [ORF]')
                 line_boundaries = [5885.74, 5886.21]
                 sel = (processed['rebin']['wave'] > line_boundaries[0]) \
                     & (processed['rebin']['wave'] < line_boundaries[1])
