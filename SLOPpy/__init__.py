@@ -47,4 +47,4 @@ from SLOPpy.transmission_binned_mcmc import *
 from SLOPpy.pca_preparation import *
 from SLOPpy.sysrem_correction import *
 
-__version__ = "1.1.2"
+__version__ = "1.1.3"

@@ -55,8 +55,8 @@ This new keyword specify the location of the `esorex` executable: if the command
 
 
 **Changelog**
-- Version 1.1.1, 1.1.2
-    Minor bugfix
+- Version 1.1.1 to 1.1.3
+    Minor bugfixes
 
 - Version 1.1.0
     Easier interface for new instruments
