@@ -1244,6 +1244,7 @@ def compute_transmission_binned_mcmc(config_in, lines_label, reference='planetRF
             if key[-8:]=='contrast':
                 key_name = key[:-8] + 'Rh'
                 sample_size = len(results_dict['flat_chain'][:,val])
+                print(sample_size)
                 planet_ratio_sample = np.random.normal(planet_dict['radius_ratio'][0],planet_dict['radius_ratio'][1],size=sample_size)
                 results_dict['derived'][key_name] = {}
                 results_dict['derived'][key_name]['flat_chain'] = np.sqrt(results_dict['flat_chain'][:,val]/planet_ratio_sample**2 + 1.)
