@@ -216,20 +216,22 @@ def plot_transmission_spectrum_preparation(config_in, night_input=''):
         plot_data = np.empty([len_y, len_x], dtype=np.double)
 
         for i_obs, obs in enumerate(lists['observations']):
-            print(np.median(preparation[obs]['deblazed'][order ,:]))
             time_from_transit[i_obs] =  input_data[obs]['BJD'] - observational_pams['time_of_transit']
-            plot_data[i_obs, :] = preparation[obs]['deblazed'][order ,:]/ np.median(preparation[obs]['ratio'][order ,:])
+            plot_data[i_obs, :] = preparation[obs]['deblazed'][order ,:]/ np.median(preparation[obs]['deblazed'][order ,:])
             wave = preparation[obs]['wave'][order, :]
+
 
         wave_meshgrid, time_meshgrid = np.meshgrid(wave, time_from_transit)
 
-        print('COOLWARM')
         cmap = plt.get_cmap('coolwarm')
 
-        levels = MaxNLocator(nbins=15).tick_values(
-            plot_data.min(), plot_data.max())
+        #levels = MaxNLocator(nbins=15).tick_values(
+        #    plot_data.min(), plot_data.max())
+        levels = MaxNLocator(nbins=21).tick_values(0.90, 1.10)
         norm = BoundaryNorm(levels, ncolors=cmap.N, clip=True)
+
         plt.figure(figsize=(15, 10))
+        plt.title('Transmission map in observer reference frame\n {0:s}'.format(night))
 
         PCF = plt.contourf(wave_meshgrid, time_meshgrid,
                             plot_data, levels=levels, cmap=cmap)
@@ -237,29 +239,30 @@ def plot_transmission_spectrum_preparation(config_in, night_input=''):
         cbar.ax.set_ylabel('Intensity')
         plt.show()
 
-        res = plot_data * 1.
-        from scipy.interpolate import UnivariateSpline
-        for ii in range(0,4096):
-            spl = UnivariateSpline(time_from_transit, plot_data[:, ii])
-            val = spl(time_from_transit)
-            res[:,ii] -= val
-            res[:,ii] /= val
+
+        if night_dict[night].get('spline_residuals', True):
+            res = plot_data * 1.
+            from scipy.interpolate import UnivariateSpline
+            for ii in range(0,4096):
+                spl = UnivariateSpline(time_from_transit, plot_data[:, ii])
+                val = spl(time_from_transit)
+                res[:,ii] -= val
+                res[:,ii] /= val
 
 
 
-        print('COOLWARM')
-        cmap = plt.get_cmap('coolwarm')
+            cmap = plt.get_cmap('coolwarm')
 
-        levels = MaxNLocator(nbins=10).tick_values(
-            -0.05, 0.05)
-        norm = BoundaryNorm(levels, ncolors=cmap.N, clip=True)
-        plt.figure(figsize=(15, 10))
+            levels = MaxNLocator(nbins=10).tick_values(-0.05, 0.05)
+            norm = BoundaryNorm(levels, ncolors=cmap.N, clip=True)
+            plt.figure(figsize=(15, 10))
+            plt.title('Residuals after dividing by UnivariateSpline Spline\n {0:s}'.format(night))
 
-        PCF = plt.contourf(wave_meshgrid, time_meshgrid,
-                            res, levels=levels, cmap=cmap)
-        cbar = plt.colorbar(PCF)
-        cbar.ax.set_ylabel('Intensity')
-        plt.show()
+            PCF = plt.contourf(wave_meshgrid, time_meshgrid,
+                                res, levels=levels, cmap=cmap)
+            cbar = plt.colorbar(PCF)
+            cbar.ax.set_ylabel('Intensity')
+            plt.show()
 
 
 
@@ -273,18 +276,29 @@ def plot_transmission_spectrum_preparation(config_in, night_input=''):
 
         gs = GridSpec(1, 2, width_ratios=[50, 1])
         ax1 = plt.subplot(gs[0, 0])
+
+        ax1.set_ylim(0.90, 1.10)
         #ax2 = plt.subplot(gs[1, 0], sharex=ax1, sharey=ax1)
         cbax1 = plt.subplot(gs[:, 1])
 
         for obs in lists['transit_in']:
 
+            #preparation[obs]['rescaling'], \
+            #preparation[obs]['rescaled'], \
+            #preparation[obs]['rescaled_err'] = perform_rescaling(
+            #    preparation[obs]['wave'],
+            #    preparation[obs]['deblazed'] / (input_data[obs]['step'] / np.median(input_data[obs]['step'])),
+            #    preparation[obs]['deblazed_err'] / (input_data[obs]['step'] / np.median(input_data[obs]['step'])),
+            #    observational_pams['wavelength_rescaling'])
+
             preparation[obs]['rescaling'], \
             preparation[obs]['rescaled'], \
             preparation[obs]['rescaled_err'] = perform_rescaling(
                 preparation[obs]['wave'],
-                preparation[obs]['deblazed'] / (input_data[obs]['step'] / np.median(input_data[obs]['step'])),
-                preparation[obs]['deblazed_err'] / (input_data[obs]['step'] / np.median(input_data[obs]['step'])),
+                preparation[obs]['deblazed'],
+                preparation[obs]['deblazed_err'],
                 observational_pams['wavelength_rescaling'])
+
 
             ax1.scatter(preparation[obs]['wave'],
                     preparation[obs]['rescaled'],

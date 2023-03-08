@@ -1343,22 +1343,23 @@ def plot_transmission_binned_mcmc(config_in, lines_label, night_input='', refere
 
     os.system('mkdir -p plots')
 
-    for night in night_list:
 
-
-        preparation_input = load_from_cpickle(
-            'transmission_preparation', config_in['output'], night)
+    # Workaround to check if the transmission spectrum has been obtained through PCA iterations
+    for night in night_dict:
+        preparation_input = load_from_cpickle('transmission_preparation', config_in['output'], night)
 
         if preparation_input.get('pca_output', False):
             if pca_iteration >= 0:
                 it_string = str(pca_iteration).zfill(2)
             else:
-                it_string = str(preparation_input.get('ref_iteration', 0)).zfill(2)
+                it_string = str(preparation_input.get('ref_iteration')).zfill(2)
         else:
             it_string = ''
-        preparation_input=None
+        preparation_input = None
+        break
 
 
+    for night in night_list:
 
         results_dict = load_from_cpickle(subroutine_name+'_'+sampler_name+'_results', config_in['output'], night, lines_label, it_string)
         print("   Transmission MCMC analysis for lines {0:s}, night: {1:s}  already performed".format(
@@ -1394,7 +1395,7 @@ def plot_transmission_binned_mcmc(config_in, lines_label, night_input='', refere
             results_dict['derived'] = {}
 
         # TODO improve output
-        print('   *** sampler output ')
+        print('   *** sampler output (plotting the chains)')
 
         sample_size = np.size(flat_chain, axis=0)
         dimen_size = np.size(flat_chain, axis=1)
@@ -1406,6 +1407,8 @@ def plot_transmission_binned_mcmc(config_in, lines_label, night_input='', refere
         }
 
         i_corner = 0
+
+
         for key, val in pams_dict.items():
             print('{0:24s}  {1:4d}  {2:12f}   {3:12f}  {4:12f} (15-84 p) ([{5:9f}, {6:9f}]) (start: {7:9f})'.format(key, val,
                                                                                                     chain_med[val,0],
@@ -1429,8 +1432,6 @@ def plot_transmission_binned_mcmc(config_in, lines_label, night_input='', refere
             corner_plot['start'].append(start_average[val])
             i_corner += 1
 
-
-            print(' Plotting the chains... ')
 
             file_name = chains_dir + repr(val) + '.png'
             fig = plt.figure(figsize=(12, 12))
@@ -1464,15 +1465,24 @@ def plot_transmission_binned_mcmc(config_in, lines_label, night_input='', refere
         output_file = get_filename(filename_rad, config_in['output'], night=night, lines=lines_label, it_string=it_string, extension='.pdf')
         print('   *** filename: ', output_file)
 
-        GTC = pygtc.plotGTC(chains=corner_plot['samples'],
-                            paramNames=corner_plot['labels'],
-                            truths=[corner_plot['truths'],corner_plot['start']],
-                            GaussianConfLevels=True,
-                            nConfidenceLevels=3,
-                            figureSize=12,
-                            labelRotation= (True,True),
-                            plotName='plots/'+output_file)
-
+        try:
+            GTC = pygtc.plotGTC(chains=corner_plot['samples'],
+                                paramNames=corner_plot['labels'],
+                                truths=[corner_plot['truths'],corner_plot['start']],
+                                GaussianConfLevels=True,
+                                nConfidenceLevels=3,
+                                figureSize=12,
+                                labelRotation= (True,True),
+                                plotName='plots/'+output_file)
+        except:
+            GTC = pygtc.plotGTC(chains=corner_plot['samples'],
+                                paramNames=corner_plot['labels'],
+                                truths=[corner_plot['truths'],corner_plot['start']],
+                                GaussianConfLevels=True,
+                                nConfidenceLevels=2,
+                                figureSize=12,
+                                labelRotation= (True,True),
+                                plotName='plots/'+output_file)
 
 
         GTC = None

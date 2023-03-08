@@ -589,6 +589,7 @@ def compute_clv_rm_models_lines(config_in, lines_label):
 
 def plot_clv_rm_models_lines(config_in, lines_label, night_input=''):
 
+    spectral_lines = from_config_get_spectral_lines(config_in)
     line_iter_dict = spectral_lines[lines_label]
 
     clv_rm_correction = line_iter_dict.get('clv_rm_correction', True)
