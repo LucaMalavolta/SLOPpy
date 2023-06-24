@@ -6,6 +6,7 @@ from SLOPpy.subroutines.fit_subroutines import *
 from SLOPpy.subroutines.shortcuts import *
 from SLOPpy.subroutines.math_functions import *
 from SLOPpy.transmission_spectrum_preparation import compute_transmission_spectrum_preparation
+from scipy.signal import savgol_filter
 
 __all__ = ['compute_transmission_spectrum',
            'plot_transmission_spectrum']
@@ -34,10 +35,19 @@ def compute_transmission_spectrum(config_in, lines_label, reference='planetRF', 
     norm_dict = lines_dict.get('normalization', {})
     norm_pams = {}
     norm_pams['normalize_transmission'] = norm_dict.get('normalize_transmission', True)
+    norm_pams['normalization_model'] = norm_dict.get('normalization_model', 'polynomial')
+
+    """ Normalization parameters for polynomial model"""
     norm_pams['model_poly_degree'] = norm_dict.get('model_poly_degree', 2)
     norm_pams['spectra_poly_degree'] = norm_dict.get('spectra_poly_degree', 2)
     norm_pams['lower_threshold'] = norm_dict.get('lower_threshold', 0.950)
     norm_pams['percentile_selection'] = norm_dict.get('percentile_selection', 10)
+
+    """ Normalization parameters using Savitzky-Golay filter"""
+    norm_pams['window_length'] = norm_dict.get('window_length', 101)
+    norm_pams['polyorder'] = norm_dict.get('polyorder', 3)
+    norm_pams['mode'] = norm_dict.get('mode', 'nearest')
+    norm_pams['cval'] = norm_dict.get('cval', 1.0)
 
     shared_data = load_from_cpickle('shared', config_in['output'])
 
@@ -344,7 +354,7 @@ def compute_transmission_spectrum(config_in, lines_label, reference='planetRF', 
                         print('   *** No CLV correction')
 
 
-                if norm_pams['normalize_transmission']:
+                if norm_pams['normalize_transmission'] and norm_pams['normalization_model'] == 'polynomial':
 
                     """ Continuum normalization preparatory steps:
                         1) exclusion of regions with lines of interes
@@ -439,6 +449,36 @@ def compute_transmission_spectrum(config_in, lines_label, reference='planetRF', 
                     transmission[obs]['normalized_uncorrected'] = transmission[obs]['rebinned'] / \
                         transmission[obs]['continuum_uncorrected']
                     transmission[obs]['normalized_uncorrected_err'] = transmission[obs]['rebinned_err'] / \
+                        transmission[obs]['continuum_uncorrected']
+
+                elif norm_pams['normalize_transmission']  and (
+                    norm_pams['normalization_model'] == 'savgol'
+                    or norm_pams['normalization_model'] == 'savitzky-golay'):
+
+                    print(' ', obs, ' normalization using Savitzky-Golay filter')
+
+                    transmission[obs]['continuum_coeff'] = None
+                    transmission[obs]['continuum_uncorrected_coeff'] = None
+
+
+                    transmission[obs]['continuum'] = savgol_filter(transmission[obs]['corrected'],
+                                                            window_length=norm_pams['window_length'],
+                                                            polyorder=norm_pams['polyorder'],
+                                                            mode=norm_pams['mode'],
+                                                            cval=norm_pams['cval'])
+
+                    transmission[obs]['normalized'] = transmission[obs]['corrected'] / transmission[obs]['continuum']
+                    transmission[obs]['normalized_err'] = transmission[obs]['corrected_err'] / \
+                        transmission[obs]['continuum']
+
+                    transmission[obs]['continuum_uncorrected'] = savgol_filter(transmission[obs]['rebinned'],
+                                                            window_length=norm_pams['window_length'],
+                                                            polyorder=norm_pams['polyorder'],
+                                                            mode=norm_pams['mode'],
+                                                            cval=norm_pams['cval'])
+
+                    transmission[obs]['normalized'] = transmission[obs]['rebinned'] / transmission[obs]['continuum_uncorrected']
+                    transmission[obs]['normalized_err'] = transmission[obs]['rebinned_err'] / \
                         transmission[obs]['continuum_uncorrected']
 
                 else:

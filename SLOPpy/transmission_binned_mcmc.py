@@ -9,6 +9,7 @@ from SLOPpy.subroutines.math_functions import *
 from SLOPpy.subroutines.plot_subroutines import *
 from SLOPpy.subroutines.bayesian_emcee import *
 # from SLOPpy.subroutines.rebin_subroutines import *
+from scipy.signal import savgol_filter
 
 __all__ = ['compute_transmission_binned_mcmc','compute_transmission_binned_mcmc_iterative',
            'plot_transmission_binned_mcmc','plot_transmission_binned_mcmc_iterative']
@@ -101,10 +102,20 @@ def compute_transmission_binned_mcmc(config_in, lines_label, reference='planetRF
     norm_dict = lines_dict.get('normalization', clv_rm_dict.get('normalization', {}))
     norm_pams={}
     norm_pams['normalize_transmission'] = norm_dict.get('normalize_transmission', True)
+    norm_pams['normalization_model'] = norm_dict.get('normalization_model', 'polynomial')
+
+    """ Normalization parameters for polynomial model"""
     norm_pams['model_poly_degree'] = norm_dict.get('model_poly_degree', 2)
     norm_pams['spectra_poly_degree'] = norm_dict.get('spectra_poly_degree', 2)
     norm_pams['lower_threshold'] = norm_dict.get('lower_threshold', 0.950)
     norm_pams['percentile_selection'] = norm_dict.get('percentile_selection', 10)
+
+    """ Normalization parameters using Savitzky-Golay filter"""
+    norm_pams['window_length'] = norm_dict.get('window_length', 101)
+    norm_pams['polyorder'] = norm_dict.get('polyorder', 3)
+    norm_pams['mode'] = norm_dict.get('mode', 'nearest')
+    norm_pams['cval'] = norm_dict.get('cval', 1.0)
+    norm_pams['normalize_rebinned'] = norm_dict.get('normalize_rebinned', False)
 
     # Added back-compatibility to old or "wrong" keys
     clv_rm_correction = lines_dict.get('clv_rm_correction', True)
@@ -301,7 +312,7 @@ def compute_transmission_binned_mcmc(config_in, lines_label, reference='planetRF
             preparation = preparation_input
             it_string = ''
 
-        """ This need to be checked only once, so it's ok to take the output of the last night 
+        """ This need to be checked only once, so it's ok to take the output of the last night
             and propagate it to the rest of subroutine
         """
         if len(it_string) > 0:
@@ -327,7 +338,7 @@ def compute_transmission_binned_mcmc(config_in, lines_label, reference='planetRF
 
         except FileNotFoundError:
 
-            print("   Computing MCMC data array for lines {0:s}, night: {1:s}".format(
+            print("  Computing MCMC data array for lines {0:s}, night: {1:s}".format(
                 lines_label, night))
 
             calib_data = load_from_cpickle(
@@ -376,53 +387,6 @@ def compute_transmission_binned_mcmc(config_in, lines_label, reference='planetRF
             processed['common_extended']['step'] = np.ones(
                 processed['common_extended']['size'], dtype=np.double) * lines_dict['fit_parameters']['bin_step']
 
-            """ Continuum normalization preparatory steps:
-                1) exclusion of regions with planetary lines
-                2) exclusion of regions with stellar lines
-                3) Polynomial fit of selected regions
-                   Boolean array initialized to all True values, fit is
-                   performed on the extended region and then applied to the fit subset
-            """
-            processed['common_extended']['line_exclusion'] = (
-                processed['common_extended']['wave'] > 0.)
-
-            """ Continuum normalization:
-                1) exclusion of regions with planetary lines, taking into
-                   account the planetary RV semi-amplitude
-            """
-            for line_key, line_val in lines_dict['lines'].items():
-                line_extension = 1.2 * \
-                    planet_dict['RV_semiamplitude'][0] * \
-                        line_val / speed_of_light_km
-                processed['common_extended']['line_exclusion'] = processed['common_extended']['line_exclusion'] & (
-                    np.abs(processed['common_extended']['wave']-line_val) > line_extension)
-
-            """ Continuum normalization:
-                2) exclusion of regions with planetary lines, taking into
-                   account the planetary RV semi-amplitude
-            """
-
-            try:
-                stellar_spectrum_rebinned = rebin_1d_to_1d(clv_rm_models['common']['wave'],
-                                    clv_rm_models['common']['step'],
-                                    clv_rm_models['common']['norm_convolved'],
-                                    processed['common_extended']['wave'],
-                                    processed['common_extended']['step'],
-                                    preserve_flux=False)
-
-                stellar_spectrum_derivative = first_derivative(
-                    processed['common_extended']['wave'], stellar_spectrum_rebinned)
-
-                cont_10perc = np.percentile(np.abs(stellar_spectrum_derivative), norm_pams['percentile_selection'])
-
-                processed['common_extended']['line_exclusion'] = processed['common_extended']['line_exclusion'] \
-                        & (np.abs(stellar_spectrum_derivative) < cont_10perc) \
-                        & (stellar_spectrum_rebinned > norm_pams['lower_threshold'])
-
-            except KeyError:
-                print(
-                    "No stellar synthetic spectrum from CLV models, some stellar lines may be included transmission normalization  ")
-
             for obs in lists['observations']:
 
                 """ we start from the e2ds file, after correction for blaze and
@@ -431,8 +395,8 @@ def compute_transmission_binned_mcmc(config_in, lines_label, reference='planetRF
                 Observation data:
                     wave: input_data[obs]['wave']
                     step: input_data[obs]['step']
-                    flux: preparation[obs]['deblazed']
-                    ferr: preparation[obs]['deblazed_err']
+                    flux: preparation[obs]['ratio']
+                    ferr: preparation[obs]['ratio']
                 """
 
                 """ First step: we rebin the spectra in the Stellar Reference Frame,
@@ -449,38 +413,86 @@ def compute_transmission_binned_mcmc(config_in, lines_label, reference='planetRF
                 processed[obs] = {}
                 processed[obs]['rebinned'] = \
                     rebin_2d_to_1d(input_data[obs]['wave'],
-                                   input_data[obs]['step'],
-                                   preparation[obs]['ratio'],
-                                   blaze,
-                                   processed['common']['wave'],
-                                   processed['common']['step'],
-                                   rv_shift=observational_pams[obs]['rv_shift_ORF2SRF'],
-                                   preserve_flux=preserve_flux)
+                                    input_data[obs]['step'],
+                                    preparation[obs]['ratio'],
+                                    blaze,
+                                    processed['common']['wave'],
+                                    processed['common']['step'],
+                                    rv_shift=observational_pams[obs]['rv_shift_ORF2SRF'],
+                                    preserve_flux=preserve_flux)
                 processed[obs]['rebinned_err'] = \
                     rebin_2d_to_1d(input_data[obs]['wave'],
-                                   input_data[obs]['step'],
-                                   preparation[obs]['ratio_err'],
-                                   blaze,
-                                   processed['common']['wave'],
-                                   processed['common']['step'],
-                                   rv_shift=observational_pams[obs]['rv_shift_ORF2SRF'],
-                                   preserve_flux=preserve_flux,
-                                   is_error=True)
+                                    input_data[obs]['step'],
+                                    preparation[obs]['ratio_err'],
+                                    blaze,
+                                    processed['common']['wave'],
+                                    processed['common']['step'],
+                                    rv_shift=observational_pams[obs]['rv_shift_ORF2SRF'],
+                                    preserve_flux=preserve_flux,
+                                    is_error=True)
 
                 processed[obs]['rebinned_extended'] = \
                     rebin_2d_to_1d(input_data[obs]['wave'],
-                                   input_data[obs]['step'],
-                                   preparation[obs]['ratio'],
-                                   blaze,
-                                   processed['common_extended']['wave'],
-                                   processed['common_extended']['step'],
-                                   rv_shift=observational_pams[obs]['rv_shift_ORF2SRF'],
-                                   preserve_flux=preserve_flux)
+                                    input_data[obs]['step'],
+                                    preparation[obs]['ratio'],
+                                    blaze,
+                                    processed['common_extended']['wave'],
+                                    processed['common_extended']['step'],
+                                    rv_shift=observational_pams[obs]['rv_shift_ORF2SRF'],
+                                    preserve_flux=preserve_flux)
+
+
+
+            if norm_pams['normalize_transmission'] and norm_pams['normalization_model'] == 'polynomial':
+
+                """ Continuum normalization preparatory steps:
+                    1) exclusion of regions with planetary lines
+                    2) exclusion of regions with stellar lines
+                    3) Polynomial fit of selected regions
+                        Boolean array initialized to all True values, fit is
+                        performed on the extended region and then applied to the fit subset
+                """
+                processed['common_extended']['line_exclusion'] = (
+                    processed['common_extended']['wave'] > 0.)
 
                 """ Continuum normalization:
-                    3) Polynomial fit
+                    1) exclusion of regions with planetary lines, taking into
+                        account the planetary RV semi-amplitude
                 """
-                if norm_pams['normalize_transmission']:
+                for line_key, line_val in lines_dict['lines'].items():
+                    line_extension = 1.2 * \
+                        planet_dict['RV_semiamplitude'][0] * \
+                            line_val / speed_of_light_km
+                    processed['common_extended']['line_exclusion'] = processed['common_extended']['line_exclusion'] & (
+                        np.abs(processed['common_extended']['wave']-line_val) > line_extension)
+
+                """ Continuum normalization:
+                    2) exclusion of regions with planetary lines, taking into
+                        account the planetary RV semi-amplitude
+                """
+
+                try:
+                    stellar_spectrum_rebinned = rebin_1d_to_1d(clv_rm_models['common']['wave'],
+                                        clv_rm_models['common']['step'],
+                                        clv_rm_models['common']['norm_convolved'],
+                                        processed['common_extended']['wave'],
+                                        processed['common_extended']['step'],
+                                        preserve_flux=False)
+
+                    stellar_spectrum_derivative = first_derivative(
+                        processed['common_extended']['wave'], stellar_spectrum_rebinned)
+
+                    cont_10perc = np.percentile(np.abs(stellar_spectrum_derivative), norm_pams['percentile_selection'])
+
+                    processed['common_extended']['line_exclusion'] = processed['common_extended']['line_exclusion'] \
+                            & (np.abs(stellar_spectrum_derivative) < cont_10perc) \
+                            & (stellar_spectrum_rebinned > norm_pams['lower_threshold'])
+
+                except KeyError:
+                    print(
+                        "No stellar synthetic spectrum from CLV models, some stellar lines may be included transmission normalization  ")
+
+                for obs in lists['observations']:
 
                     selection = processed['common_extended']['line_exclusion'] & (
                         processed[obs]['rebinned_extended'] > np.std(processed[obs]['rebinned_extended']))
@@ -495,7 +507,55 @@ def compute_transmission_binned_mcmc(config_in, lines_label, reference='planetRF
                         processed[obs]['continuum']
                     processed[obs]['normalized_err'] = processed[obs]['rebinned_err'] / \
                         processed[obs]['continuum']
-                else:
+
+            elif norm_pams['normalize_transmission']  and (
+                    norm_pams['normalization_model'] == 'savgol'
+                    or norm_pams['normalization_model'] == 'savitzky-golay'):
+
+                print('  Normalization using Savitzky-Golay filter')
+
+                for obs in lists['observations']:
+
+                    if norm_pams['normalize_rebinned']:
+
+                        processed[obs]['continuum'] = savgol_filter(preparation[obs]['rebinned'],
+                                                                window_length=norm_pams['window_length'],
+                                                                polyorder=norm_pams['polyorder'],
+                                                                mode=norm_pams['mode'],
+                                                                cval=norm_pams['cval'])
+
+
+                    else:
+                        normalization_model = preparation[obs]['ratio'] * 0.00
+                        for order in range(0, observational_pams['n_orders']):
+
+                            normalization_model[order,:] = savgol_filter(preparation[obs]['ratio'][order,:],
+                                                                window_length=norm_pams['window_length'],
+                                                                polyorder=norm_pams['polyorder'],
+                                                                mode=norm_pams['mode'],
+                                                                cval=norm_pams['cval'])
+
+                        processed[obs]['continuum'] = \
+                            rebin_2d_to_1d(input_data[obs]['wave'],
+                                            input_data[obs]['step'],
+                                            normalization_model,
+                                            blaze,
+                                            processed['common']['wave'],
+                                            processed['common']['step'],
+                                            rv_shift=observational_pams[obs]['rv_shift_ORF2SRF'],
+                                            preserve_flux=preserve_flux)
+
+
+                    processed[obs]['continuum_coeff'] = None
+                    processed[obs]['normalized'] = processed[obs]['rebinned'] / \
+                        processed[obs]['continuum']
+                    processed[obs]['normalized_err'] = processed[obs]['rebinned_err'] / \
+                        processed[obs]['continuum']
+
+
+            else:
+                for obs in lists['observations']:
+
                     processed[obs]['continuum_coeff'] = None
                     processed[obs]['continuum'] = np.ones_like(processed['common']['wave'])
                     processed[obs]['normalized'] = processed[obs]['rebinned'].copy()

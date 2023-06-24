@@ -7,6 +7,7 @@ from SLOPpy.subroutines.shortcuts import *
 from SLOPpy.subroutines.plot_subroutines import *
 
 from scipy.interpolate import UnivariateSpline
+from scipy.signal import savgol_filter
 
 
 __all__ = ['compute_transmission_spectrum_preparation',
@@ -191,7 +192,7 @@ def plot_transmission_spectrum_preparation(config_in, night_input=''):
         observational_pams = load_from_cpickle('observational_pams', config_in['output'], night)
 
         # ! To be removed when testing is done
-        # ! This plots do not make any sense anymore 
+        # ! This plots do not make any sense anymore
         input_data = retrieve_observations(config_in['output'], night, lists['observations'])
 
 
