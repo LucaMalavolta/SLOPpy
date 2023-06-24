@@ -477,8 +477,8 @@ def compute_transmission_spectrum(config_in, lines_label, reference='planetRF', 
                                                             mode=norm_pams['mode'],
                                                             cval=norm_pams['cval'])
 
-                    transmission[obs]['normalized'] = transmission[obs]['rebinned'] / transmission[obs]['continuum_uncorrected']
-                    transmission[obs]['normalized_err'] = transmission[obs]['rebinned_err'] / \
+                    transmission[obs]['normalized_uncorrected'] = transmission[obs]['rebinned'] / transmission[obs]['continuum_uncorrected']
+                    transmission[obs]['normalized_uncorrected_err'] = transmission[obs]['rebinned_err'] / \
                         transmission[obs]['continuum_uncorrected']
 
                 else:
