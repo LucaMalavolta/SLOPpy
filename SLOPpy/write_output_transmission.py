@@ -434,8 +434,8 @@ def write_output_transmission(config_in, reference='planetRF', night_input='', p
                                                             mode=norm_pams['mode'],
                                                             cval=norm_pams['cval'])
 
-                    transmission[obs]['normalized'] = transmission[obs]['rebinned'] / transmission[obs]['continuum_uncorrected']
-                    transmission[obs]['normalized_err'] = transmission[obs]['rebinned_err'] / \
+                    transmission[obs]['normalized_uncorrected'] = transmission[obs]['rebinned'] / transmission[obs]['continuum_uncorrected']
+                    transmission[obs]['normalized_uncorrected_err'] = transmission[obs]['rebinned_err'] / \
                         transmission[obs]['continuum_uncorrected']
 
                 else:
