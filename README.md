@@ -11,6 +11,10 @@ Valerio Nascimbeni,
 Giampaolo Piotto,
 Isabella Pagano
 
+For **Scientific questions**, please contact Daniela Sicilia
+Fro **Technical problems and software maintenance** please contact Luca Malavolta
+
+
 **News**
 In version 1.1 it is much easier to add new instruments
 
