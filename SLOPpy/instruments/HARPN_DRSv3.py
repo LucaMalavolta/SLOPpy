@@ -75,8 +75,8 @@ def HARPNv3_get_instrument_keywords():
         'molecfit': {
             'default_wstep': 0.01000, # default wavelength step size for the input stellar spectra
             'molecules': ['H2O', 'O2'],
-            'ftol': "1e-9",
-            'xtol': "1e-9",
+            'ftol': 1e-9,
+            'xtol': 1e-9,
 
             'cont_const': 1.0, # a0,  This value differs from Allart+2017 since we are using normalized spectra
             'cont_n': 3, # n_cont, Degree of coefficients for continuum fit

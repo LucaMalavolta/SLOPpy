@@ -456,11 +456,22 @@ def write_molecfit_v1_par(filename_par, filename_data,  filename_output, filenam
 
     ## FIT PRECISION
 
-    # Relative chi2 convergence criterion
-    fileout.write("ftol: " + molecfit_dict['ftol'] + "\n")
+    # --FTOL
+    # Relative chi-square convergence criterion.
+    # FTOL=1e-9
+    try:
+        fileout.write('ftol: {0:.12f}\n'.format(molecfit_dict['ftol']))
+    except ValueError:
+        fileout.write("ftol=" + molecfit_dict['ftol'] + "\n")
 
-    # Relative parameter convergence criterion
-    fileout.write("xtol: " + molecfit_dict['xtol'] + "\n")
+    # --XTOL
+    # Relative parameter convergence criterion.
+    # XTOL=1e-10
+    try:
+        fileout.write('xtol: {0:.12f}\n'.format(molecfit_dict['xtol']))
+    # Relative chi2 convergence criterion
+    except ValueError:
+        fileout.write("xtol: " + molecfit_dict['xtol'] + "\n")
 
     ## MOLECULAR COLUMNS
 
