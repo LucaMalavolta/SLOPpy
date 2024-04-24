@@ -51,7 +51,6 @@ def compute_sky_correction(config_in):
             processed[obs] = {}
 
         " computing the ratio between the lamp flux of fiber A and  B"
-        print()
         print("  Computing the ratio between the lamp flux of fiber A and  B")
 
         processed['ratioAB'] = calib_data_A['lamp'][map_orders_A, :]/calib_data_B['lamp'][map_orders_B, :]
@@ -61,7 +60,6 @@ def compute_sky_correction(config_in):
         wave_difference = \
             input_data_A[first_obs]['wave'][map_orders_A, :] - input_data_B[first_obs]['wave'][map_orders_B, :]
 
-        print()
         print("   Wavelength difference between fiber A and B: ", \
             np.average(wave_difference), " +- ", np.std(wave_difference), " \AA")
 
@@ -74,6 +72,8 @@ def compute_sky_correction(config_in):
             is minimal """
 
             for obs in lists['observations']:
+                print(obs)
+
                 processed[obs]['sky_fibA'] = np.zeros([input_data_A['n_orders'], input_data_A['n_pixels']])
                 processed[obs]['sky_fibA'][map_orders_A, :] = \
                     processed['ratioAB'] * input_data_B[obs]['e2ds'][map_orders_B, :]
@@ -88,7 +88,7 @@ def compute_sky_correction(config_in):
                 #processed[obs]['e2ds'][processed[obs]['null']] = replacement
 
         save_to_cpickle('skycorrected_fibA', processed, config_in['output'], night)
-
+        print()
 
 def plot_sky_correction(config_in, night_input=''):
 
