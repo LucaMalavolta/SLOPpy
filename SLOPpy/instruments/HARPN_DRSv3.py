@@ -3,7 +3,7 @@ from __future__ import print_function, division
 from SLOPpy.instruments.common_DRSv3 import *
 
 def HARPNv3_get_instrument_keywords():
-    """ These definitions applt to DRS version 3.x """
+    """ These definitions apply to DRS version 3.x """
     keywords = {
         'header_rvc': 'HIERARCH TNG DRS CCF RVC',
         'header_berv': 'HIERARCH TNG DRS BERV',

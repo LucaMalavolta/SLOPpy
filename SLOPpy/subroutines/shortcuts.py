@@ -1305,7 +1305,7 @@ def write_molecfit_par(filename_par, wave_include, molecfit_dict, observing_dict
     fileout.close()
 
 
-def write_molecfit_input_spectrum(wave, flux, filename):
+def write_molecfit_input_spectrum(wave, flux, filename, keywords=None):
     #writing the molecfit input fits files
 
     good=range(len(wave))
@@ -1329,14 +1329,20 @@ def write_molecfit_input_spectrum(wave, flux, filename):
 
     #Now, create a new binary table HDU object by using the BinTableHDU.from_columns() function:
     #hdu = fits.BinTableHDU.from_columns(cols)
-    hdu = fits.BinTableHDU.from_columns([col1, col2, col3, col4])
+    table_hdu = fits.BinTableHDU.from_columns([col1, col2, col3, col4])
 
     #The data structure used to represent FITS tables is called a FITS_rec and is derived from the numpy.recarray interface.
     #When creating a new table HDU the individual column arrays will be assembled into a single FITS_rec array.
 
-    #Now you may write this new table HDU directly to a FITS file like so:
-    hdu.writeto(filename, overwrite=True)
-
+    if keywords is None:
+        #Now you may write this new table HDU directly to a FITS file like so:
+        table_hdu.writeto(filename, overwrite=True)
+    else:
+        primary_hdu = fits.PrimaryHDU()
+        for key, value in keywords.items():
+            primary_hdu.header[key] = value
+        hdu_out = fits.HDUList([primary_hdu, table_hdu])
+        hdu_out.writeto(filename, overwrite=True)
 
 def write_calctrans_par(filename_par):
     fileout = open(filename_par, 'w')

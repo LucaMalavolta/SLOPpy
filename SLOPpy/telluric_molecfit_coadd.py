@@ -149,7 +149,7 @@ def compute_telluric_molecfit_coadd(config_in, no_coadding=False):
                                rv_shift=0.00)
 
             """ This part is relative to the coadded spectrum, must be placed here because
-                some variables such as direcotry names must be defined before the next step
+                some variables such as directory names must be defined before the next step
                 spectra are coadded to increase the SNR of the spectrum analyzed by molecfit
             """
             if n_coadd == 0:
@@ -167,7 +167,9 @@ def compute_telluric_molecfit_coadd(config_in, no_coadding=False):
                     'HUMIDITY': input_data[obs]['HUMIDITY'],
                     'PRESSURE': input_data[obs]['PRESSURE'],
                     'TEMPERATURE_EN': input_data[obs]['TEMPERATURE_EN'],
-                    'TEMPERATURE_M1': input_data[obs]['TEMPERATURE_M1']}
+                    'TEMPERATURE_M1': input_data[obs]['TEMPERATURE_M1'],
+                    'AIRM_START': input_data[obs]['AIRM_START'],
+                    'AIRM_END': input_data[obs]['AIRM_END']}
 
                 coadded_files = open(reference_dirname + reference_name + '_files.list', 'w')
 
@@ -185,6 +187,7 @@ def compute_telluric_molecfit_coadd(config_in, no_coadding=False):
                 molecfit_pams['PRESSURE'] += input_data[obs]['PRESSURE']
                 molecfit_pams['TEMPERATURE_EN'] += input_data[obs]['TEMPERATURE_EN']
                 molecfit_pams['TEMPERATURE_M1'] += input_data[obs]['TEMPERATURE_M1']
+                molecfit_pams['AIRM_END'] = input_data[obs]['AIRM_END']
 
             n_coadd += 1
             coadded_files.write(obs + '\n')
@@ -209,9 +212,20 @@ def compute_telluric_molecfit_coadd(config_in, no_coadding=False):
             """
             observation_name = obs
             observation_tabname = obs + '_ORF_s1d.fits'
+
+            """ HDU keywords required starting from Molecfit 4.3"""
+
+            hdu_keywords = {
+                'MJD-OBS': (input_data[obs]['MJD'], 'MJD-OBS'),
+                'ESO OBS EXECTIME': (input_data[obs]['EXPTIME'], 'EXPTIME'), #not sure about this...
+                'ESO TEL AIRM START': (input_data[obs]['AIRM_START'], 'AIRMASS START'),
+                'ESO TEL AIRM END': (input_data[obs]['AIRM_END'], 'AIRMASS END')
+            }
+
             write_molecfit_input_spectrum(processed['rebin']['wave'],
                                           processed[obs]['rebin_ORF'],
-                                          observation_dirname + observation_tabname)
+                                          observation_dirname + observation_tabname,
+                                          keywords = hdu_keywords)
 
             observation_calctrans_parname = observation_name + '_calctrans.rc'
             write_calctrans_par(observation_dirname + observation_calctrans_parname)
@@ -264,11 +278,21 @@ def compute_telluric_molecfit_coadd(config_in, no_coadding=False):
 
                     rebin_coadd /= n_coadd
 
-                    """ the spectra is saved as an ASCII file in a format suitable for molecfit """
+                    """ the spectra is saved as a FITS file in a format suitable for molecfit """
                     reference_tabname = reference_name + '_ORF_s1d.fits'
+
+                    """ New FITS keywords required by Molecfit 4.3"""
+                    hdu_keywords = {
+                        'MJD-OBS': (molecfit_pams['MJD'], 'MJD-OBS'),
+                        'ESO OBS EXECTIME': (texp_cumulated, 'EXPTIME'),
+                        'ESO TEL AIRM START': (molecfit_pams['AIRM_START'], 'AIRMASS START'),
+                        'ESO TEL AIRM END': (molecfit_pams['AIRM_END'], 'AIRMASS END')
+                    }
+
                     write_molecfit_input_spectrum(processed['rebin']['wave'],
-                                                  rebin_coadd,
-                                                  reference_dirname + reference_tabname)
+                                                    rebin_coadd,
+                                                    reference_dirname + reference_tabname,
+                                                    keywords=hdu_keywords)
 
                     """ Average of the observational parameters """
                     for key in molecfit_pams:
@@ -280,9 +304,9 @@ def compute_telluric_molecfit_coadd(config_in, no_coadding=False):
 
                     reference_molecfit_parname = reference_name + '_molecfit.rc'
                     write_molecfit_par(reference_dirname + reference_molecfit_parname,
-                                       wave_include,
-                                       input_data[obs]['molecfit'],
-                                       molecfit_pams)
+                                        wave_include,
+                                        input_data[obs]['molecfit'],
+                                        molecfit_pams)
 
                     reference_calctrans_parname = reference_name + '_calctrans.rc'
                     write_calctrans_par(reference_dirname + reference_calctrans_parname)

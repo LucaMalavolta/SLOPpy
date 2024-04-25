@@ -164,6 +164,13 @@ def DRSv3_get_input_data(archive, file_rad, keywords, properties, mask, fiber='A
         input_dict['AIRMASS'] = (e2ds_fits[0].header[keywords['airmass_alt_start']]
 									+ e2ds_fits[0].header[keywords['airmass_alt_end']])/2.
 
+    try:
+        input_dict['AIRM_START'] = e2ds_fits[0].header[keywords['airmass_alt_start']]
+        input_dict['AIRM_END'] = e2ds_fits[0].header[keywords['airmass_alt_end']]
+    except:
+        input_dict['AIRM_START'] = input_dict['AIRMASS'] -0.05
+        input_dict['AIRM_END'] = max(1.00, input_dict['AIRMASS'] +0.05)
+
     input_dict['UTC'] = (input_dict['MJD'] - int(input_dict['MJD'])) * 86400.
     input_dict['HUMIDITY'] = e2ds_fits[0].header[keywords['humidity']]
     input_dict['PRESSURE'] = e2ds_fits[0].header[keywords['pressure']]
