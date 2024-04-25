@@ -10,10 +10,8 @@ from SLOPpy.differential_refraction import *
 from SLOPpy.check_differential_refraction import *
 from SLOPpy.telluric_template import *
 from SLOPpy.telluric_molecfit_v1_preparation import *
-from SLOPpy.telluric_molecfit_v1 import *
 from SLOPpy.telluric_molecfit_v1_coadd import *
 from SLOPpy.telluric_molecfit_preparation import *
-from SLOPpy.telluric_molecfit import *
 from SLOPpy.telluric_molecfit_coadd import *
 from SLOPpy.telluric_template_alternative import *
 from SLOPpy.telluric_airmass_stellarRF import *
@@ -47,4 +45,4 @@ from SLOPpy.transmission_binned_mcmc import *
 from SLOPpy.pca_preparation import *
 from SLOPpy.sysrem_correction import *
 
-__version__ = "1.2.2"
+__version__ = "1.3.0"

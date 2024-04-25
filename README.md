@@ -60,8 +60,9 @@ This new keyword specifies the location of the `esorex` executable: if the comma
 
 **Changelog**
 
-- Version 1.3
+- Version 1.3.0
     Default AER version is now "3.8.1.2" are required by Molecfit v. 4.3.1 (April 2024))
+    It is now possible to perform Molecfit telluric modelling on individual spectra rather than on coadded spectra
 
 - Version 1.1.1 to 1.2.2
     Minor bugfixes
