@@ -8,18 +8,14 @@ from SLOPpy.subroutines.shortcuts import *
 from SLOPpy.telluric_molecfit_preparation import compute_telluric_molecfit_preparation
 
 __all__ = ["compute_telluric_molecfit_coadd",
-           "plot_telluric_molecfit_coadd"]
+           "plot_telluric_molecfit_coadd",
+           "compute_telluric_molecfit",
+           "plot_telluric_molecfit"]
 
 subroutine_name = 'telluric_molecfit_coadd'
 
 
-def compute_telluric_molecfit_coadd(config_in):
-    """
-    Lazy workaround
-    :param config_in:
-    :param kwargs:
-    :return:
-    """
+def compute_telluric_molecfit_coadd(config_in, no_coadding=False):
 
     night_dict = from_config_get_nights(config_in)
     instrument_dict = from_config_get_instrument(config_in)
@@ -27,7 +23,19 @@ def compute_telluric_molecfit_coadd(config_in):
 
     compute_telluric_molecfit_preparation(config_in)
 
-    aer_version = molecfit_dict.get('aer_version', '3.8')
+    aer_version = molecfit_dict.get('aer_version', '3.8.1.2')
+
+    if no_coadding==True:
+        print()
+        print("--- WARNING ---: MOLECFIT model will be computed on individual spectra rather than on coadded spectra ")
+        print("                 This task is accomplished by the same routine that computes the model on coadded spectra")
+        print("                 With the only difference that the coadded spectra is made by a single observations")
+        print("                 This choice proves a lot the maintenance of the code. As a consequence you will see a lot")
+        print("                 of 'coadded' messages while running the code. ")
+        print()
+        molecfit_dict['exptime_coadd'] = 0.001
+        subroutine_name = 'telluric_molecfit'
+
 
     for night in night_dict:
 
@@ -390,12 +398,23 @@ def compute_telluric_molecfit_coadd(config_in):
         print("Night ", night, " completed")
 
 
-def plot_telluric_molecfit_coadd(config_in, night_input=''):
+def plot_telluric_molecfit_coadd(config_in, night_input='', no_coadding=False):
     import matplotlib.pyplot as plt
 
     night_dict = from_config_get_nights(config_in)
     instrument_dict = from_config_get_instrument(config_in)
     system_dict = from_config_get_system(config_in)
+
+    if no_coadding==True:
+        print()
+        print("--- WARNING ---: MOLECFIT model will be computed on individual spectra rather than on coadded spectra ")
+        print("                 This task is accomplished by the same routine that computes the model on coadded spectra")
+        print("                 With the only difference that the coadded spectra is made by a single observations")
+        print("                 This choice proves a lot the maintenance of the code. As a consequence you will see a lot")
+        print("                 of 'coadded' messages while running the code. ")
+        print()
+        subroutine_name = 'telluric_molecfit'
+
 
     if night_input == '':
         night_list = night_dict
@@ -410,7 +429,8 @@ def plot_telluric_molecfit_coadd(config_in, night_input=''):
         # plt.plot(rescaling_array, 2*rescaling_array*coeff[0] + coeff[1] )
         # plt.plot()
 
-        print("plot_telluric_molecfit_coadd                  Night: ", night)
+        print("{0:45s} Night:{1:15s}   {2:s}".format(subroutine_name, night, 'Plotting'))
+
 
         """ Retrieving the list of observations"""
         lists = load_from_cpickle('lists', config_in['output'], night)
@@ -502,3 +522,10 @@ def plot_telluric_molecfit_coadd(config_in, night_input=''):
         cbar.set_label('BJD - 2450000.0')
         fig.subplots_adjust(wspace=0.05, hspace=0.4)
         plt.show()
+
+
+def compute_telluric_molecfit(config_in):
+    compute_telluric_molecfit_coadd(config_in, no_coadding=True)
+
+def plot_telluric_molecfit(config_in, night_input=''):
+    plot_telluric_molecfit_coadd(config_in, night_input=night_input, no_coadding=True)

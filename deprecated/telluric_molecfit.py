@@ -5,6 +5,7 @@ from SLOPpy.subroutines.io_subroutines import *
 from SLOPpy.subroutines.fit_subroutines import *
 from SLOPpy.subroutines.plot_subroutines import *
 from SLOPpy.subroutines.shortcuts import *
+from SLOPpy.telluric_molecfit_coadd import *
 
 __all__ = ["compute_telluric_molecfit",
            "plot_telluric_molecfit"]
@@ -67,8 +68,8 @@ def compute_telluric_molecfit(config_in):
         processed['rebin'] = {}
 
         """
-        Molecfit works on pixel grid, so we must ensure that the spectra are rebinned always on the same wavelength 
-        scale and same wavelength step. We use local arrays for this purpose 
+        Molecfit works on pixel grid, so we must ensure that the spectra are rebinned always on the same wavelength
+        scale and same wavelength step. We use local arrays for this purpose
         """
 
         rebin_step_unit = 0.01000000

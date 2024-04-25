@@ -55,16 +55,20 @@ molecfit:
   ...
 ```
 
-This new keyword specify the location of the `esorex` executable: if the command is avaialble system-wide (i.e., you can launch esorex by simply writing `esorex` in your terminal), then it is not necessary to specify the full path of the excutable.
+This new keyword specifies the location of the `esorex` executable: if the command is available system-wide (i.e., you can launch esorex by simply writing `esorex` in your terminal), then it is not necessary to specify the full path of the executable.
 
 
 **Changelog**
-- Version 1.1.1 to 1.1.3
+
+- Version 1.3
+    Default AER version is now "3.8.1.2" are required by Molecfit v. 4.3.1 (April 2024))
+
+- Version 1.1.1 to 1.2.2
     Minor bugfixes
 
 - Version 1.1.0
     Easier interface for new instruments
-    New module to write transmisison spectra in the stellar reference system with (optional) CLV and RM correction: `write_output_transmission_stellarRF`. Note: CLV and RM correction only available through `CLV_RM_models` module
+    New module to write transmission spectra in the stellar reference system with (optional) CLV and RM correction: `write_output_transmission_stellarRF`. Note: CLV and RM correction only available through `CLV_RM_models` module
 
 - Version 1.0.2:
 
