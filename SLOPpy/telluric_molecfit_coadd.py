@@ -35,6 +35,9 @@ def compute_telluric_molecfit_coadd(config_in, no_coadding=False):
         print()
         molecfit_dict['exptime_coadd'] = 0.001
         subroutine_name = 'telluric_molecfit'
+    else:
+        subroutine_name = 'telluric_molecfit_coadd'
+
 
 
     for night in night_dict:
@@ -438,7 +441,8 @@ def plot_telluric_molecfit_coadd(config_in, night_input='', no_coadding=False):
         print("                 of 'coadded' messages while running the code. ")
         print()
         subroutine_name = 'telluric_molecfit'
-
+    else:
+        subroutine_name = 'telluric_molecfit_coadd'
 
     if night_input == '':
         night_list = night_dict
