@@ -64,20 +64,20 @@ def compute_clv_rm_models(config_in):
         synthesis_data_limb_angles = np.genfromtxt(
             clv_rm_dict['synthesis_files'] + '_muvals.txt', dtype=np.single)
         synthesis_data_spectra = np.genfromtxt(
-            clv_rm_dict['synthesis_files'] + '_spectra.txt', dtype=np.single)
+            clv_rm_dict['synthesis_files'] + '_spectra.txt', dtype=np.double)
         synthesis_data_model = np.genfromtxt(
-            clv_rm_dict['synthesis_files'] + '_model.txt', dtype=np.single)
+            clv_rm_dict['synthesis_files'] + '_model.txt', dtype=np.double)
 
         synthesis = {
             'surface': {
                 'wave': synthesis_data_spectra[:, 0],
-                'flux': synthesis_data_spectra[:, 1:],
+                'flux': np.single(synthesis_data_spectra[:, 1:]),
                 'n_mu': np.size(synthesis_data_limb_angles),
                 'mu': synthesis_data_limb_angles
             },
             'total': {
                 'wave': synthesis_data_model[:, 0],
-                'norm': synthesis_data_model[:, 1],
+                'norm': np.single(synthesis_data_model[:, 1]),
             }
         }
 

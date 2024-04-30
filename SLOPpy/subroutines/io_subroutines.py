@@ -43,24 +43,24 @@ accepted_extensions = ['.yaml', '.yml', '.conf', '.config', '.input', ]
 
 def save_to_cpickle(fname, dictionary, output, night='', lines='', it_string='', temp_folder=''):
 
-    output_file = get_filename(fname, output, night, lines, it_string, temp_folder)
+    output_file = get_filename(fname, output, night, lines, it_string, temp_folder=temp_folder)
     pickle.dump(dictionary, open(output_file, "wb"))
 
 
 def load_from_cpickle(fname, output, night='', lines='', it_string='', temp_folder=''):
 
-    output_file = get_filename(fname, output, night, lines, it_string, temp_folder)
+    output_file = get_filename(fname, output, night, lines, it_string, temp_folder=temp_folder)
     return pickle.load(open(output_file, "rb"))
 
 
 def delete_cpickle(fname, output, night='', lines='', it_string='', temp_folder=''):
 
-    output_file = get_filename(fname, output, night, lines, it_string, temp_folder)
+    output_file = get_filename(fname, output, night, lines, it_string, temp_folder=temp_folder)
     os.remove(output_file)
 
 def check_existence_cpickle(fname, output, night='', lines='', it_string='', temp_folder=''):
 
-    output_file = get_filename(fname, output, night, lines, it_string, temp_folder)
+    output_file = get_filename(fname, output, night, lines, it_string, temp_folder=temp_folder)
     return path.isfile(output_file)
 
 
