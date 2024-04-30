@@ -41,32 +41,36 @@ __all__ = ["save_to_cpickle",
 accepted_extensions = ['.yaml', '.yml', '.conf', '.config', '.input', ]
 
 
-def save_to_cpickle(fname, dictionary, output, night='', lines='', it_string=''):
+def save_to_cpickle(fname, dictionary, output, night='', lines='', it_string='', temp_folder=''):
 
-    output_file = get_filename(fname, output, night, lines, it_string)
+    output_file = get_filename(fname, output, night, lines, it_string, temp_folder)
     pickle.dump(dictionary, open(output_file, "wb"))
 
 
-def load_from_cpickle(fname, output, night='', lines='', it_string=''):
+def load_from_cpickle(fname, output, night='', lines='', it_string='', temp_folder=''):
 
-    output_file = get_filename(fname, output, night, lines, it_string)
+    output_file = get_filename(fname, output, night, lines, it_string, temp_folder)
     return pickle.load(open(output_file, "rb"))
 
 
-def delete_cpickle(fname, output, night='', lines='', it_string=''):
+def delete_cpickle(fname, output, night='', lines='', it_string='', temp_folder=''):
 
-    output_file = get_filename(fname, output, night, lines, it_string)
+    output_file = get_filename(fname, output, night, lines, it_string, temp_folder)
     os.remove(output_file)
 
-def check_existence_cpickle(fname, output, night='', lines='', it_string=''):
+def check_existence_cpickle(fname, output, night='', lines='', it_string='', temp_folder=''):
 
-    output_file = get_filename(fname, output, night, lines, it_string)
+    output_file = get_filename(fname, output, night, lines, it_string, temp_folder)
     return path.isfile(output_file)
 
 
-def get_filename(fname, output, night, lines='', it_string='', extension=".p"):
+def get_filename(fname, output, night, lines='', it_string='', extension=".p", temp_folder=''):
 
-    str_lines = output
+    if len(temp_folder) > 0:
+        str_lines = temp_folder + '/'+ output
+    else:
+        str_lines = output
+
     for str_input in [lines, night, fname, it_string]:
         if len(str_input) > 0:
             str_lines += '_' + str_input
