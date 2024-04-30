@@ -38,6 +38,7 @@ from SLOPpy.quick_transmission import *
 
 # NEW
 from SLOPpy.clv_rm_models import *
+from SLOPpy.clv_rm_models_doubleprecision import *
 from SLOPpy.clv_rm_models_lines import *
 from SLOPpy.transmission_mcmc import *
 from SLOPpy.transmission_binned_mcmc import *

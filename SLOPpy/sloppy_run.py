@@ -82,6 +82,7 @@ def sloppy_run():
     pipeline_common_routines['master_out'] = SLOPpy.compute_master_out
 
     pipeline_common_routines['clv_rm_models'] = SLOPpy.compute_clv_rm_models
+    pipeline_common_routines['clv_rm_models_doubleprecision'] = SLOPpy.compute_clv_rm_models_doubleprecision
     pipeline_common_routines['transmission_spectrum_preparation'] = SLOPpy.compute_transmission_spectrum_preparation
 
     pipeline_common_routines['write_output_transmission'] = SLOPpy.write_output_transmission
@@ -209,6 +210,7 @@ def sloppy_run():
 
     # ! New
     plot_preparation_routines['clv_rm_models'] = SLOPpy.plot_clv_rm_models
+    plot_preparation_routines['clv_rm_models_doubleprecision'] = SLOPpy.plot_clv_rm_models
 
 
     plot_routines = collections.OrderedDict()
@@ -292,6 +294,7 @@ def sloppy_run():
 
     plot_lines_routines = collections.OrderedDict()
     plot_lines_routines['clv_rm_models_lines'] = SLOPpy.plot_clv_rm_models_lines
+
 
     plot_lines_routines['transmission_binned_mcmc'] = SLOPpy.plot_transmission_binned_mcmc
 

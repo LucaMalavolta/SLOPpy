@@ -9,12 +9,12 @@ from SLOPpy.subroutines.math_functions import *
 
 from astropy.convolution import Gaussian1DKernel, convolve
 
-__all__ = ['compute_clv_rm_models', 'plot_clv_rm_models']
+__all__ = ['compute_clv_rm_models_doubleprecision']
 
 subroutine_name = 'clv_rm_models'
 
 
-def compute_clv_rm_models(config_in):
+def compute_clv_rm_models_doubleprecision(config_in):
     night_dict = from_config_get_nights(config_in)
     instrument_dict = from_config_get_instrument(config_in)
 
@@ -62,11 +62,11 @@ def compute_clv_rm_models(config_in):
         """
 
         synthesis_data_limb_angles = np.genfromtxt(
-            clv_rm_dict['synthesis_files'] + '_muvals.txt', dtype=np.single)
+            clv_rm_dict['synthesis_files'] + '_muvals.txt', dtype=np.double)
         synthesis_data_spectra = np.genfromtxt(
-            clv_rm_dict['synthesis_files'] + '_spectra.txt', dtype=np.single)
+            clv_rm_dict['synthesis_files'] + '_spectra.txt', dtype=np.double)
         synthesis_data_model = np.genfromtxt(
-            clv_rm_dict['synthesis_files'] + '_model.txt', dtype=np.single)
+            clv_rm_dict['synthesis_files'] + '_model.txt', dtype=np.double)
 
         synthesis = {
             'surface': {
@@ -124,14 +124,14 @@ def compute_clv_rm_models(config_in):
 
         """ Coordinates of the centers of each grid cell (add offset) """
         star_grid['xx'] = np.linspace(-1.0000000000000, 1.0000000000000,
-                                      star_grid['n_grid'], dtype=np.single)
+                                      star_grid['n_grid'], dtype=np.double)
         star_grid['xc'], star_grid['yc'] = np.meshgrid(
             star_grid['xx'], star_grid['xx'], indexing='xy')
         # check the Note section of the wiki page of meshgrid
         # https://docs.scipy.org/doc/numpy/reference/generated/numpy.meshgrid.html
 
         """ Distance of each grid cell from the center of the stellar disk """
-        star_grid['rc'] = np.sqrt(star_grid['xc'] ** 2 + star_grid['yc'] ** 2, dtype=np.single)
+        star_grid['rc'] = np.sqrt(star_grid['xc'] ** 2 + star_grid['yc'] ** 2)
         # Must avoid negative numbers inside the square root
         star_grid['inside'] = star_grid['rc'] < 1.0000000000000
         # Must avoid negative numbers inside the square root
@@ -139,31 +139,32 @@ def compute_clv_rm_models(config_in):
 
         """ Determine the mu angle for each grid cell, as a function of radius. """
         star_grid['mu'] = np.zeros([star_grid['n_grid'], star_grid['n_grid']],
-                                   dtype=np.single)  # initialization of the matrix with the mu values
+                                   dtype=np.double)  # initialization of the matrix with the mu values
         star_grid['mu'][star_grid['inside']] = np.sqrt(
-            1. - star_grid['rc'][star_grid['inside']] ** 2, dtype=np.single)
+            1. - star_grid['rc'][star_grid['inside']] ** 2)
 
         """  2.2 Determine the Doppler shift to apply to the spectrum of each grid cell, from Cegla+2016 """
 
-        star_grid['x_ortho'] = star_grid['xc'] * np.cos(star_dict['lambda'][0] * deg2rad, dtype=np.single) \
-            - star_grid['yc'] * np.sin(star_dict['lambda'][0] * deg2rad, dtype=np.single)  # orthogonal distances from the spin-axis
-        star_grid['y_ortho'] = star_grid['xc'] * np.sin(star_dict['lambda'][0] * deg2rad, dtype=np.single) \
-            + star_grid['yc'] * np.cos(star_dict['lambda'][0] * deg2rad, dtype=np.single)
+        star_grid['x_ortho'] = star_grid['xc'] * np.cos(star_dict['lambda'][0] * deg2rad) \
+            - star_grid['yc'] * np.sin(
+            star_dict['lambda'][0] * deg2rad)  # orthogonal distances from the spin-axis
+        star_grid['y_ortho'] = star_grid['xc'] * np.sin(star_dict['lambda'][0] * deg2rad) \
+            + star_grid['yc'] * np.cos(star_dict['lambda'][0] * deg2rad)
 
         star_grid['r_ortho'] = np.sqrt(
-            star_grid['x_ortho'] ** 2 + star_grid['y_ortho'] ** 2, dtype=np.single)
+            star_grid['x_ortho'] ** 2 + star_grid['y_ortho'] ** 2)
         star_grid['z_ortho'] = np.zeros([star_grid['n_grid'], star_grid['n_grid']],
-                                        dtype=np.single)  # initialization of the matrix
+                                        dtype=np.double)  # initialization of the matrix
         star_grid['z_ortho'][star_grid['inside']] = np.sqrt(
-            1. -star_grid['r_ortho'][star_grid['inside']] ** 2, dtype=np.single)
+            1. -star_grid['r_ortho'][star_grid['inside']] ** 2)
 
         """ rotate the coordinate system around the x_ortho axis by an angle: """
         star_grid['beta'] = (np.pi / 2.) - \
             star_dict['inclination'][0] * deg2rad
 
         """ orthogonal distance from the stellar equator """
-        star_grid['yp_ortho'] = star_grid['z_ortho'] * np.sin(star_grid['beta'], dtype=np.single) \
-            + star_grid['y_ortho'] * np.cos(star_grid['beta'], dtype=np.single)
+        star_grid['yp_ortho'] = star_grid['z_ortho'] * np.sin(star_grid['beta']) + star_grid['y_ortho'] * np.cos(
+            star_grid['beta'])
 
         """ stellar rotational velocity for a given position """
         star_grid['v_star'] = star_grid['x_ortho'] * star_dict['vsini'][0] * (
@@ -232,9 +233,9 @@ def compute_clv_rm_models(config_in):
         radius_grid = np.arange(clv_rm_dict['radius_factor'][0],
                                 clv_rm_dict['radius_factor'][1] +
                                 clv_rm_dict['radius_factor'][2],
-                                clv_rm_dict['radius_factor'][2], dtype=np.single)
+                                clv_rm_dict['radius_factor'][2])
     except KeyError:
-        radius_grid = np.arange(0.5, 2.6, 0.1, dtype=np.single)
+        radius_grid = np.arange(0.5, 2.6, 0.1)
 
     for night in night_dict:
         """ Retrieving the list of observations"""
@@ -338,7 +339,7 @@ def compute_clv_rm_models(config_in):
 
             processed[obs]['bjd_oversampling'] = np.linspace(observational_pams[obs]['BJD'] - half_time,
                                                              observational_pams[obs]['BJD'] + half_time,
-                                                             n_oversampling, dtype=np.single)
+                                                             n_oversampling, dtype=np.double)
             if planet_dict['orbit'] == 'circular':
                 # Time of pericenter concides with transit time, if we assume e=0 and omega=np.pi/2.
                 eccentricity = 0.00
@@ -377,7 +378,7 @@ def compute_clv_rm_models(config_in):
             # obscured flux integrated over the full epoch
             # grid n_radius_grid X size_out (of spectral model)
             clv_rm_models[obs]['missing_flux'] = np.zeros(
-                [len(radius_grid), synthesis['surface']['size_out']], dtype=np.single)
+                [len(radius_grid), synthesis['surface']['size_out']], dtype=np.double)
 
             # iterating on the sub-exposures
             for j, zeta in enumerate(processed[obs]['planet_position']['zp']):
@@ -440,15 +441,15 @@ def compute_clv_rm_models(config_in):
 
             clv_rm_models[obs]['stellar_spectra_convolved'] = \
                 np.zeros([len(radius_grid), synthesis['surface']['size_out']],
-                         dtype=np.single)
+                         dtype=np.double)
 
             clv_rm_models[obs]['clv_rm_model_convolved'] = \
                 np.zeros([len(radius_grid), synthesis['surface']['size_out']],
-                         dtype=np.single)
+                         dtype=np.double)
 
             clv_rm_models[obs]['clv_rm_model_convolved_derivative'] = \
                 np.zeros([len(radius_grid), synthesis['surface']['size_out']],
-                         dtype=np.single)
+                         dtype=np.double)
 
             clv_rm_models[obs]['clv_rm_model_convolved_continuum_bool'] = \
                 np.zeros([len(radius_grid), synthesis['surface']['size_out']],
@@ -456,7 +457,7 @@ def compute_clv_rm_models(config_in):
 
             clv_rm_models[obs]['clv_rm_model_convolved_normalized'] = \
                 np.zeros([len(radius_grid), synthesis['surface']['size_out']],
-                         dtype=np.single)
+                         dtype=np.double)
 
 
 
@@ -532,103 +533,3 @@ def compute_clv_rm_models(config_in):
     save_to_cpickle('clv_rm_star_grid', star_grid, config_in['output'])
     save_to_cpickle('clv_rm_synthesis', synthesis, config_in['output'])
 
-
-def plot_clv_rm_models(config_in, night_input=''):
-    night_dict = from_config_get_nights(config_in)
-
-    synthesis = load_from_cpickle('clv_rm_synthesis', config_in['output'])
-    star_grid = load_from_cpickle('clv_rm_star_grid', config_in['output'])
-
-    if night_input == '':
-        # Visualize the mu of star
-        fig = plt.figure(figsize=(8, 6.5))
-
-        plt.title('Limb angle')
-        plt.contourf(star_grid['xx'], star_grid['xx'],
-                     star_grid['mu'], 60, cmap=plt.cm.viridis)
-        plt.colorbar(label='$\mu$')  # draw colorbar
-        # plot data points.
-        plt.xlim(-1, 1)
-        plt.ylim(-1, 1)
-        plt.xlabel('x [R_s]')
-        plt.ylabel('y [R_s]')
-        plt.show()
-
-        # Visualize the RV of star
-        fig = plt.figure(figsize=(8, 6.5))
-
-        # CS = plt.contour(xx,xx,v_star,50,linewidths=0.5,colors='k')
-        plt.title('Radial velocity field')
-
-        plt.contourf(star_grid['xx'], star_grid['xx'],
-                     star_grid['v_star'], 100, cmap=plt.cm.seismic)
-        plt.colorbar(label='v_star')  # draw colorbar
-        plt.xlim(-1, 1)
-        plt.ylim(-1, 1)
-        plt.xlabel('x [R_s]')
-        plt.ylabel('y [R_s]')
-        plt.show()
-
-    if night_input == '':
-        night_list = night_dict
-    else:
-        night_list = np.atleast_1d(night_input)
-
-    for night in night_list:
-
-        lists = load_from_cpickle('lists', config_in['output'], night)
-        clv_rm_models = load_from_cpickle(
-            'clv_rm_models', config_in['output'], night)
-        observational_pams = load_from_cpickle(
-            'observational_pams', config_in['output'], night)
-
-        colors_properties, colors_plot, colors_scatter = make_color_array_matplotlib3(
-            lists, observational_pams)
-
-        fig = plt.figure(figsize=(12, 6))
-        gs = GridSpec(2, 2, width_ratios=[50, 1])
-
-        ax1 = plt.subplot(gs[0, 0])
-        ax2 = plt.subplot(gs[1, 0], sharex=ax1, sharey=ax1)
-        cbax1 = plt.subplot(gs[:, 1])
-
-        i0_radius = np.argmin(
-            np.abs(clv_rm_models['common']['radius_grid']-1.00))
-
-        for obs in lists['transit_in']:
-            ax1.plot(clv_rm_models['common']['wave'],
-                     clv_rm_models[obs]['stellar_spectra'][i0_radius, :],
-                     color=colors_plot['mBJD'][obs], alpha=0.2)
-
-            ax1.plot(clv_rm_models['common']['wave'],
-                     clv_rm_models[obs]['missing_flux'][i0_radius, :] /
-                     clv_rm_models['common']['continuum_level'],
-                     color=colors_plot['mBJD'][obs], alpha=0.2)
-
-            ax2.plot(clv_rm_models['common']['wave'],
-                     clv_rm_models[obs]['stellar_spectra'][-1, :],
-                     color=colors_plot['mBJD'][obs], alpha=0.2)
-
-            ax2.plot(clv_rm_models['common']['wave'],
-                     clv_rm_models[obs]['missing_flux'][-1, :] /
-                     clv_rm_models['common']['continuum_level'],
-                     color=colors_plot['mBJD'][obs], alpha=0.2)
-
-        # for obs in lists['transit_out']:
-        #    ax2.plot(clv_rm_models['common']['wave'],
-        #             clv_rm_models[obs]['stellar_spectra'],
-        #             color=colors_plot['mBJD'][obs], alpha=0.2)
-
-        ax1.set_title(
-            'Night: {0:s} \n Input spectra, stellar radius'.format(night))
-        ax2.set_title('Stellar radius x {0:2.2f}'.format(
-            clv_rm_models['common']['radius_grid'][-1]))
-        ax2.set_xlabel('$\lambda$ [$\AA$]')
-
-        sm = plt.cm.ScalarMappable(
-            cmap=colors_properties['cmap'], norm=colors_properties['norm']['mBJD'])
-        sm.set_array([])  # You have to set a dummy-array for this to work...
-        cbar = plt.colorbar(sm, cax=cbax1)
-        cbar.set_label('BJD - 2450000.0')
-        fig.subplots_adjust(wspace=0.05, hspace=0.4)
-        plt.show()
