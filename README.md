@@ -16,20 +16,18 @@ Fro **Technical problems and software maintenance** please contact Luca Malavolt
 
 
 **News**
-In version 1.1 it is much easier to add new instruments
+Version 1.3 now satisfies the new FITS requirements of `molecfit` version 4.3.1 (as for 30th of April 2024) 
+Starting from version 1.1, it is much easier to add new instruments
 
-Paper accepted, repository now publicly available, documentation and examples coming online in a few days.
-
-Basic [documentation available here](https://sloppy.readthedocs.io/en/latest/), updates will follow in the upcoming weeks.
+Basic [documentation is available here](https://sloppy.readthedocs.io/en/latest/).
 
 Most of the information can be found in Sicilia et al. (2022) [A&A link](https://doi.org/10.1051/0004-6361/202244055) [ADS link](https://ui.adsabs.harvard.edu/abs/2022arXiv220813045S/abstract) [arXiv link](https://arxiv.org/abs/2208.13045)
 
+**Note on the use of `molecfitv**
 
-**Note on the use of molecfit**
+`SLOPpy` supports both the old version `1.5.x` (available as a stand-alone program) and the latest version `>4` through ESO `esorex`.
 
-`SLOPpy` supports both the old version `1.5.x` (available as a stand-alone program) and the latest version `>4` through ESO esorex.
-
-To use version 1.5.x, you have to use the molecfit modules marked with `v1`, and specify the installation path under the `molecfit` section:
+To use version 1.5.x, you have to use the `molecfit` modules marked with `v1`, and specify the installation path under the `molecfit` section:
 
 ```bash
 pipeline:

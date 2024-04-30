@@ -90,10 +90,10 @@ def write_output_transmission(config_in, reference='planetRF', night_input='', p
             'range': range_temp,
             'wave': shared_data['coadd']['wave'][shared_selection],
             'step': shared_data['coadd']['step'][shared_selection],
-            'size': np.int(np.sum(shared_selection)),
+            'size': int(np.sum(shared_selection)),
             'binned_wave': shared_data['binned']['wave'][binned_selection],
             'binned_step': shared_data['binned']['step'][binned_selection],
-            'binned_size': np.int(np.sum(binned_selection))
+            'binned_size': int(np.sum(binned_selection))
         }
 
     else:

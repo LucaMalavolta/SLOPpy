@@ -56,7 +56,7 @@ def compute_spectra_lightcurve(config_in, lines_label):
         'range': lines_dict['range'],
         'wave': shared_data['coadd']['wave'][shared_selection],
         'step': shared_data['coadd']['step'][shared_selection],
-        'size': np.int(np.sum(shared_selection)),
+        'size': int(np.sum(shared_selection)),
     }
 
 

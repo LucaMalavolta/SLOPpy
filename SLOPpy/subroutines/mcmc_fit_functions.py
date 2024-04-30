@@ -65,7 +65,7 @@ def logprob_case00(theta,
         jitter_pams = 0.
     elif len(jitter_index) > 0:
         jitter_array = jitter_index * 0.
-        n_jitter = np.int(np.amax(jitter_index) + 1)
+        n_jitter = int(np.amax(jitter_index) + 1)
         jitter_pams = np.empty(n_jitter)
         for i_j in range(0, n_jitter):
             sel = (jitter_index == i_j)
@@ -147,7 +147,7 @@ def logprob_case01(theta,
         jitter_pams = 0.
     elif len(jitter_index) > 0:
         jitter_array = jitter_index * 0.
-        n_jitter = np.int(np.amax(jitter_index) + 1)
+        n_jitter = int(np.amax(jitter_index) + 1)
         jitter_pams = np.empty(n_jitter)
         for i_j in range(0, n_jitter):
             sel = (jitter_index == i_j)
@@ -228,7 +228,7 @@ def logprob_case02(theta,
         jitter_pams = 0.
     elif len(jitter_index) > 0:
         jitter_array = jitter_index * 0.
-        n_jitter = np.int(np.amax(jitter_index) + 1)
+        n_jitter = int(np.amax(jitter_index) + 1)
         jitter_pams = np.empty(n_jitter)
         for i_j in range(0, n_jitter):
             sel = (jitter_index == i_j)
@@ -295,7 +295,7 @@ def logprob_case03(theta,
         jitter_pams = 0.
     elif len(jitter_index) > 0:
         jitter_array = jitter_index * 0.
-        n_jitter = np.int(np.amax(jitter_index) + 1)
+        n_jitter = int(np.amax(jitter_index) + 1)
         jitter_pams = np.empty(n_jitter)
         for i_j in range(0, n_jitter):
             sel = (jitter_index == i_j)
@@ -363,7 +363,7 @@ def logprob_case10(theta,
         jitter_pams = 0.
     elif len(jitter_index) > 0:
         jitter_array = jitter_index * 0.
-        n_jitter = np.int(np.amax(jitter_index) + 1)
+        n_jitter = int(np.amax(jitter_index) + 1)
         jitter_pams = np.empty(n_jitter)
         for i_j in range(0, n_jitter):
             sel = (jitter_index == i_j)
@@ -455,7 +455,7 @@ def logprob_case11(theta,
         jitter_pams = 0.
     elif len(jitter_index) > 0:
         jitter_array = jitter_index * 0.
-        n_jitter = np.int(np.amax(jitter_index) + 1)
+        n_jitter = int(np.amax(jitter_index) + 1)
         jitter_pams = np.empty(n_jitter)
         for i_j in range(0, n_jitter):
             sel = (jitter_index == i_j)
@@ -546,7 +546,7 @@ def logprob_case12(theta,
         jitter_pams = 0.
     elif len(jitter_index) > 0:
         jitter_array = jitter_index * 0.
-        n_jitter = np.int(np.amax(jitter_index) + 1)
+        n_jitter = int(np.amax(jitter_index) + 1)
 
         jitter_pams = np.empty(n_jitter)
         for i_j in range(0, n_jitter):
@@ -639,7 +639,7 @@ def logprob_case13(theta,
         jitter_pams = 0.
     elif len(jitter_index) > 0:
         jitter_array = jitter_index * 0.
-        n_jitter = np.int(np.amax(jitter_index) + 1)
+        n_jitter = int(np.amax(jitter_index) + 1)
         jitter_pams = np.empty(n_jitter)
         for i_j in range(0, n_jitter):
             sel = (jitter_index == i_j)
@@ -729,7 +729,7 @@ def logprob_case14(theta,
         jitter_pams = 0.
     elif len(jitter_index) > 0:
         jitter_array = jitter_index * 0.
-        n_jitter = np.int(np.amax(jitter_index) + 1)
+        n_jitter = int(np.amax(jitter_index) + 1)
         jitter_pams = np.empty(n_jitter)
         for i_j in range(0, n_jitter):
             sel = (jitter_index == i_j)
@@ -820,7 +820,7 @@ def logprob_case15(theta,
         jitter_pams = 0.
     elif len(jitter_index) > 0:
         jitter_array = jitter_index * 0.
-        n_jitter = np.int(np.amax(jitter_index) + 1)
+        n_jitter = int(np.amax(jitter_index) + 1)
         jitter_pams = np.empty(n_jitter)
         for i_j in range(0, n_jitter):
             sel = (jitter_index == i_j)
@@ -913,7 +913,7 @@ def logprob_case20(theta,
         jitter_pams = 0.
     elif len(jitter_index) > 0:
         jitter_array = jitter_index * 0.
-        n_jitter = np.int(np.amax(jitter_index) + 1)
+        n_jitter = int(np.amax(jitter_index) + 1)
         jitter_pams = np.empty(n_jitter)
         for i_j in range(0, n_jitter):
             sel = (jitter_index == i_j)
@@ -999,7 +999,7 @@ def logprob_case21(theta,
         jitter_pams = 0.
     elif len(jitter_index) > 0:
         jitter_array = jitter_index * 0.
-        n_jitter = np.int(np.amax(jitter_index) + 1)
+        n_jitter = int(np.amax(jitter_index) + 1)
         jitter_pams = np.empty(n_jitter)
         for i_j in range(0, n_jitter):
             sel = (jitter_index == i_j)
@@ -1084,7 +1084,7 @@ def logprob_case22(theta,
         jitter_pams = 0.
     elif len(jitter_index) > 0:
         jitter_array = jitter_index * 0.
-        n_jitter = np.int(np.amax(jitter_index) + 1)
+        n_jitter = int(np.amax(jitter_index) + 1)
         jitter_pams = np.empty(n_jitter)
         for i_j in range(0, n_jitter):
             sel = (jitter_index == i_j)
@@ -1169,7 +1169,7 @@ def logprob_case23(theta,
         jitter_pams = 0.
     elif len(jitter_index) > 0:
         jitter_array = jitter_index * 0.
-        n_jitter = np.int(np.amax(jitter_index) + 1)
+        n_jitter = int(np.amax(jitter_index) + 1)
         jitter_pams = np.empty(n_jitter)
         for i_j in range(0, n_jitter):
             sel = (jitter_index == i_j)
@@ -1254,7 +1254,7 @@ def logprob_case24(theta,
         jitter_pams = 0.
     elif len(jitter_index) > 0:
         jitter_array = jitter_index * 0.
-        n_jitter = np.int(np.amax(jitter_index) + 1)
+        n_jitter = int(np.amax(jitter_index) + 1)
         jitter_pams = np.empty(n_jitter)
         for i_j in range(0, n_jitter):
             sel = (jitter_index == i_j)
@@ -1339,7 +1339,7 @@ def logprob_case25(theta,
         jitter_pams = 0.
     elif len(jitter_index) > 0:
         jitter_array = jitter_index * 0.
-        n_jitter = np.int(np.amax(jitter_index) + 1)
+        n_jitter = int(np.amax(jitter_index) + 1)
         jitter_pams = np.empty(n_jitter)
         for i_j in range(0, n_jitter):
             sel = (jitter_index == i_j)

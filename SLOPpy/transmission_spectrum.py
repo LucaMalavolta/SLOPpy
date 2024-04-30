@@ -65,10 +65,10 @@ def compute_transmission_spectrum(config_in, lines_label, reference='planetRF', 
         'range': lines_dict['range'],
         'wave': shared_data['coadd']['wave'][shared_selection],
         'step': shared_data['coadd']['step'][shared_selection],
-        'size': np.int(np.sum(shared_selection)),
+        'size': int(np.sum(shared_selection)),
         'binned_wave': shared_data['binned']['wave'][binned_selection],
         'binned_step': shared_data['binned']['step'][binned_selection],
-        'binned_size': np.int(np.sum(binned_selection))
+        'binned_size': int(np.sum(binned_selection))
     }
 
     for night in night_dict:

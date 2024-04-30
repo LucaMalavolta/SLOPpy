@@ -37,8 +37,8 @@ setup(
     },
     zip_safe=False,
     install_requires=[
-        'numpy>=1.22',
-        'numba>=0.55.2',
+        'numpy>=1.26.4',
+        'numba>=0.59.1',
         'scipy>=1.8.1',
         'matplotlib>=3.5.2',
         'astropy>=5.1',

@@ -28,7 +28,7 @@ def compute_quick_transmission(config_in, lines_label):
         'subroutine': subroutine_name,
         'binned_wave': shared_data['binned']['wave'][binned_selection],
         'binned_step': shared_data['binned']['step'][binned_selection],
-        'binned_size': np.int(np.sum(binned_selection))
+        'binned_size': int(np.sum(binned_selection))
     }
 
     import matplotlib.pyplot as plt
