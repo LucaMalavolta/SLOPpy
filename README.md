@@ -16,7 +16,8 @@ Fro **Technical problems and software maintenance** please contact Luca Malavolt
 
 
 **News**
-Version 1.3 now satisfies the new FITS requirements of `molecfit` version 4.3.1 (as for 30th of April 2024) 
+Version 1.3 now satisfies the new FITS requirements of `molecfit` version 4.3.1 (as for 30th of April 2024)
+In the future, it may be necessary to change the AER version through the configuration file. 
 Starting from version 1.1, it is much easier to add new instruments
 
 Basic [documentation is available here](https://sloppy.readthedocs.io/en/latest/).
@@ -59,9 +60,10 @@ This new keyword specifies the location of the `esorex` executable: if the comma
 **Changelog**
 
 - Version 1.3.0
-    Default AER version is now "3.8.1.2" are required by Molecfit v. 4.3.1 (April 2024))
-    It is now possible to perform Molecfit telluric modeling on individual spectra rather than on coadded spectra
-    Temporary FITS files for telluric correction are now compliant with the new requirements of Molecfit 4.3
+    Default AER version is now "3.8.1.2" are required by `molecfit` v. 4.3.1 (April 2024))
+    It is now possible to perform `molecfit` telluric modeling on individual spectra rather than on coadded spectra
+    Temporary FITS files for telluric correction are now compliant with the new requirements of `molecfit` 4.3
+    Deprecated `np.int` calls have been removed
 
 - Version 1.1.1 to 1.2.2
     Minor bugfixes
@@ -76,7 +78,7 @@ This new keyword specifies the location of the `esorex` executable: if the comma
 
 - Version 1.0.1:
 
-    Added support to AER v3.8, bundled with Molecfit as in November 2022 \
+    Added support to AER v3.8, bundled with Molecfit as for November 2022 \
     To use version 3.6, add this keyword in the configuration file under the molecfit section:\
     NOTE: it must be a string and not a number\
 
