@@ -286,7 +286,7 @@ def compute_telluric_molecfit_coadd(config_in, no_coadding=False):
 
                     """ New FITS keywords required by Molecfit 4.3"""
                     hdu_keywords = {
-                        'MJD-OBS': (molecfit_pams['MJD'], 'MJD-OBS'),
+                        'MJD-OBS': (molecfit_pams['MJD']/n_coadd, 'MJD-OBS'),
                         'ESO OBS EXECTIME': (texp_cumulated, 'EXPTIME'),
                         'ESO TEL AIRM START': (molecfit_pams['AIRM_START'], 'AIRMASS START'),
                         'ESO TEL AIRM END': (molecfit_pams['AIRM_END'], 'AIRMASS END')
