@@ -13,3 +13,4 @@ pygtc
 sphinx-book-theme
 myst-parser
 myst-nb
+PyAstronomy
