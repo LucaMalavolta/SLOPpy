@@ -777,6 +777,7 @@ def compute_transmission_binned_mcmc(config_in, lines_label, reference='planetRF
         nthin = sampler_pams.get('n_thin', 50)
         nsteps = sampler_pams.get('n_steps', 20000)
         nburnin = sampler_pams.get('n_burnin', 10000)
+        ncpus = sampler_pams.get('n_cpus', 10)
         ndata = np.size(wave_meshgrid)
 
         if pams_dict.get('rp_factor', False):
@@ -809,7 +810,7 @@ def compute_transmission_binned_mcmc(config_in, lines_label, reference='planetRF
             lines_center,
             jitter_index,
             prior_dict,
-            theta_start, boundaries, ndim, nwalkers, ngen, nsteps, nthin)
+            theta_start, boundaries, ndim, nwalkers, ngen, nsteps, nthin, ncpus)
 
         flat_chain, flat_lnprob, chain_med, chain_MAP, lnprob_med, lnprob_MAP = \
             emcee_flatten_median(population, sampler_chain,
@@ -1130,6 +1131,7 @@ def compute_transmission_binned_mcmc(config_in, lines_label, reference='planetRF
         nthin = sampler_pams.get('n_thin', 50)
         nsteps = sampler_pams.get('n_steps', 20000)
         nburnin = sampler_pams.get('n_burnin', 10000)
+        nburnin = sampler_pams.get('n_cpus', 10)
         ndata = np.size(all_wave_meshgrid)
 
         if pams_dict.get('rp_factor', False):
@@ -1158,7 +1160,7 @@ def compute_transmission_binned_mcmc(config_in, lines_label, reference='planetRF
             lines_center,
             all_jitter_index,
             prior_dict,
-            theta_start, boundaries, ndim, nwalkers, ngen, nsteps, nthin)
+            theta_start, boundaries, ndim, nwalkers, ngen, nsteps, nthin, ncpus)
 
         flat_chain, flat_lnprob, chain_med, chain_MAP, lnprob_med, lnprob_MAP = \
             emcee_flatten_median(population, sampler_chain,

@@ -128,7 +128,7 @@ def emcee_lines_fit_functions(model_case,
                               lines_center,
                               jitter_index,
                               priors_dict,
-                              theta_start, boundaries, ndim, nwalkers, ngen, nsteps, nthin):
+                              theta_start, boundaries, ndim, nwalkers, ngen, nsteps, nthin, ncpus):
 
     os.environ["OMP_NUM_THREADS"] = "1"
 
@@ -173,7 +173,7 @@ def emcee_lines_fit_functions(model_case,
 
     try:
         #from pyde.de import DiffEvol
-	from pytransit.utils.de import DiffEvol
+        from pytransit.utils.de import DiffEvol
         use_pyde = True
     except ImportError:
         print('   Warnign: PyDE is not installed, random initialization point')
@@ -231,7 +231,7 @@ def emcee_lines_fit_functions(model_case,
         point_start[0, :] = theta_start
 
     start = time.time()
-    with Pool() as pool:
+    with Pool(processes=ncpus) as pool:
 
         sampler = emcee.EnsembleSampler(nwalkers,
                                         ndim,
