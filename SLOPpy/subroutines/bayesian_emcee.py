@@ -172,7 +172,8 @@ def emcee_lines_fit_functions(model_case,
     logprob = model_dictionaries[model_case]
 
     try:
-        from pyde.de import DiffEvol
+        #from pyde.de import DiffEvol
+	from pytransit.utils.de import DiffEvol
         use_pyde = True
     except ImportError:
         print('   Warnign: PyDE is not installed, random initialization point')
