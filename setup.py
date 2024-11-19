@@ -52,7 +52,7 @@ setup(
         'tqdm>=4.60',
         'pygtc>=0.4.1',
         'jaxlib==0.4.31',
-        'jax==0.4.31'
+        'jax==0.4.31',
         'tinygp>=0.3.0',
         'PyAstronomy>=0.18',
         'ordered-set',
