@@ -692,7 +692,7 @@ def compute_transmission_mcmc(config_in, lines_label, reference='planetRF', pca_
         nthin = sampler_pams.get('n_thin', 50)
         nsteps = sampler_pams.get('n_steps', 20000)
         nburnin = sampler_pams.get('n_burnin', 5000)
-        ncpus = sampler_pams.get('n_cpus', 10)
+        ncpus = sampler_pams.get('n_cpus', 4)
         ndata = np.size(wave_array)
 
         if pams_dict.get('rp_factor', False):

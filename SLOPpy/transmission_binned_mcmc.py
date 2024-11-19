@@ -777,7 +777,7 @@ def compute_transmission_binned_mcmc(config_in, lines_label, reference='planetRF
         nthin = sampler_pams.get('n_thin', 50)
         nsteps = sampler_pams.get('n_steps', 20000)
         nburnin = sampler_pams.get('n_burnin', 10000)
-        ncpus = sampler_pams.get('n_cpus', 10)
+        ncpus = sampler_pams.get('n_cpus', 4)
         ndata = np.size(wave_meshgrid)
 
         if pams_dict.get('rp_factor', False):
@@ -1131,7 +1131,7 @@ def compute_transmission_binned_mcmc(config_in, lines_label, reference='planetRF
         nthin = sampler_pams.get('n_thin', 50)
         nsteps = sampler_pams.get('n_steps', 20000)
         nburnin = sampler_pams.get('n_burnin', 10000)
-        nburnin = sampler_pams.get('n_cpus', 10)
+        ncpus = sampler_pams.get('n_cpus', 4)
         ndata = np.size(all_wave_meshgrid)
 
         if pams_dict.get('rp_factor', False):
