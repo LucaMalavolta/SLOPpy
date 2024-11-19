@@ -1,16 +1,22 @@
 ###### Requirements with Version Specifiers ######
-numpy >=1.22
-numba >=0.55.2
+numpy ==1.26.4
+numba >=0.55.1
 scipy >=1.8.1
 matplotlib >=3.5.2
 emcee >=3.1.2
 astropy >=5.1
 astroquery >=0.4
-oyaml >= 1.0
+pyerfa >=2.0
+oyaml >=1.0
 argparse >=1.4
-h5py >= 3.7.0
-tqdm >= 4.60
-pygtc >= 0.4.1
+h5py >=3.7.0
+tqdm >=4.60
+pygtc >=0.4.1
+jaxlib ==0.4.31
+jax ==0.4.31
+tinygp >=0.3.0
 PyAstronomy >= 0.18
 ###### Requirements without Version Specifiers ######
+pyaml
+ordered-set
 scikit-learn

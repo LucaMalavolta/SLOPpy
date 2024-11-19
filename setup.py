@@ -11,7 +11,7 @@ long_description = (this_directory / "README.md").read_text()
 
 setup(
     name="SLOPpy-package",
-    version='1.3',
+    version='1.4.0',
     author="Daniela Sicilia, Luca Malavolta, et al.",
 	author_email = 'daniela.sicilia@inaf.it, luca.malavolta@unipd.it',
 	url = 'https://github.com/LucaMalavolta/SLOPpy',
@@ -37,8 +37,8 @@ setup(
     },
     zip_safe=False,
     install_requires=[
-        'numpy>=1.26.4',
-        'numba>=0.59.1',
+        'numpy==1.26.4',
+        'numba>=0.55.1',
         'scipy>=1.8.1',
         'matplotlib>=3.5.2',
         'astropy>=5.1',
@@ -51,11 +51,12 @@ setup(
         'h5py>=3.7.0',
         'tqdm>=4.60',
         'pygtc>=0.4.1',
-        'tinygp>=0.2.2',
+        'jaxlib==0.4.31',
+        'jax==0.4.31'
+        'tinygp>=0.3.0',
         'PyAstronomy>=0.18',
-        'sphinx-book-theme',
-        'myst-parser',
-        'myst-nb',
+        'ordered-set',
+        'scikit-learn'
     ],
     setup_requires=['setuptools']
 )

@@ -4,11 +4,11 @@
 
 ## Setting up an environment
 
-Before proceeding with the installation, I suggest to create an environment dedicated to `SLOPpy` using python\<=3.9 .  At the moment of writing I hve received a few complaints (unrelated to SLOPpy) about Python 3.10, so you may use it at your own risk.
+Before proceeding with the installation, I suggest to create an environment dedicated to `SLOPpy` using python 3.10
 With conda/anaconda:
 
 ```{code} bash
-conda create --name sloppy python=3.9
+conda create --name sloppy python=3.10
 ```
 
 To list the available environments do:
