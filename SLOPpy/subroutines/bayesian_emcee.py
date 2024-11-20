@@ -88,7 +88,7 @@ def define_theta_array(model_case,line_iter_dict, planet_dict, n_jitter, allow_e
     #                        [[-300., planet_dict['RV_semiamplitude']
     #                            [0] + 300.]],
     #                        axis=0)
-
+    '''
     boundaries = np.append(boundaries,
                             [[planet_dict['RV_semiamplitude'][0] - 75.,
                               planet_dict['RV_semiamplitude'][0] + 75.]],
@@ -97,9 +97,9 @@ def define_theta_array(model_case,line_iter_dict, planet_dict, n_jitter, allow_e
     '''
     boundaries = np.append(boundaries,
                             [[0.,
-                              200.]],
+                              300.]],
                             axis=0)
-    '''
+    
     theta_start = np.append(
         theta_start, planet_dict['RV_semiamplitude'][0] / 1000.0)
     pam_index += 1
