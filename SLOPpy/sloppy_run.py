@@ -4,7 +4,7 @@ import os
 import sys
 import collections
 
-def sloppy_run():
+def sloppy_run(file_conf=None ):
 
     print()
     print('SLOPpy v{0}'.format(SLOPpy.__version__))
@@ -15,15 +15,18 @@ def sloppy_run():
     #    print('WARNING MESSAGES SUPPRESSED!')
     #print()
 
-    parser = argparse.ArgumentParser(prog='SLOPpy_Run', description='SLOPpy runner')
-    parser.add_argument('config_file', type=str, nargs=1, help='config file')
-
-    args = parser.parse_args()
-    file_conf = args.config_file[0]
+    if file_conf is None:
+        parser = argparse.ArgumentParser(prog='SLOPpy_Run', description='SLOPpy runner')
+        parser.add_argument('config_file', type=str, nargs=1, help='config file')
+    
+        args = parser.parse_args()
+        file_conf = args.config_file[0]
 
     config_in = SLOPpy.yaml_parser(file_conf)
 
     SLOPpy.pars_input(config_in)
+
+    return()
 
     print()
     """ creation of the pickle files """
