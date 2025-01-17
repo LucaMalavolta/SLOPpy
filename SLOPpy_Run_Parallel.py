@@ -1,6 +1,6 @@
-import yaml, argparse, sys, SLOPpy, os
+import yaml, argparse, sys, SLOPpy, os, glob
 from joblib import Parallel, delayed
-
+import numpy as np
 
 if __name__ == '__main__':
 
@@ -20,8 +20,6 @@ if __name__ == '__main__':
     with open(file_conf, 'r') as file:
         config = yaml.safe_load(file)
     file.close()
-
-    # print(config['nights'].keys())
 
     orig_stdout = sys.stdout
     
@@ -49,8 +47,23 @@ if __name__ == '__main__':
         return()
     
 
-    Parallel(n_jobs=len(config['nights'].keys()))(delayed(launch_sloppy_thread)(night,config,file_conf) for night in config['nights'].keys())
+    # Parallel(n_jobs=len(config['nights'].keys()))(delayed(launch_sloppy_thread)(night,config,file_conf) for night in config['nights'].keys())
+
+    sys.stdout = orig_stdout
     
-    SLOPpy.sloppy_run(file_conf=config)#launching SLOPpy on the original config file (maybe to run the combined fit?)
+    #This is a workaround to make SLOPpy perform the combined analysis.
+    #For each night, the parallelized analysis produces pickle files whose names are preceded by the night string: <night>+<pickle filename>
+    #The following loop creates a symlink to the <night>+<pickle file name> with name <pickle file name>: this way the combined analysis is performed using the results from the parallelized night-wise analysis
+    for night in config['nights'].keys():
+        lista_all=np.sort(glob.glob(night+'*'+night+'*.p'))
+        for l in lista_all:
+            # print(l)
+            # print(l[11:])
+            if not os.path.islink(l[11:]):
+                if ('doublet' in l[11:]) and (night in l[11:]): continue #to skip the combined analysis run on individual nights
+                os.symlink(l,l[11:])
+            
+  
+    # SLOPpy.sloppy_run(file_conf=config)#launching SLOPpy on the original config file (maybe to run the combined fit?)
 
     sys.stdout = orig_stdout

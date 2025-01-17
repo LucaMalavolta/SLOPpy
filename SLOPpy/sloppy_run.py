@@ -26,7 +26,7 @@ def sloppy_run(file_conf=None ):
 
     SLOPpy.pars_input(config_in)
 
-    return()
+    #return()
 
     print()
     """ creation of the pickle files """
