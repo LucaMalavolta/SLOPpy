@@ -91,7 +91,7 @@ def compute_telluric_stellarRF(config_in, **kwargs):
             processed[obs]['e2ds_err'] = input_data[obs]['e2ds_err']
 
             processed[obs]['flux'] = input_data[obs]['e2ds']/calib_data['blaze']/input_data[obs]['step']
-            processed[obs]['flux_err'] = np.sqrt(input_data[obs]['e2ds'])/calib_data['blaze']/input_data[obs]['step']
+            processed[obs]['flux_err'] = input_data[obs]['e2ds_err']/calib_data['blaze']/input_data[obs]['step']
 
             preserve_flux = input_data[obs].get('absolute_flux', True)
 

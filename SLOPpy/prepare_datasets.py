@@ -87,6 +87,8 @@ def prepare_datasets(config_in):
         files_list, files_transit_out, files_transit_in, files_transit_full, files_telluric, files_star_telluric = get_filelists(
             night_dict[night])
 
+        """ fix the potential problem of multiple observations taken during the same night"""
+        night_name = night_dict.get('night', night)
 
         lists_dictionary = {
             'observations': files_list,
@@ -189,8 +191,8 @@ def prepare_datasets(config_in):
             print("  Reading ", obs, " associated files")
 
             observations_A[obs], observations_s1d_A[obs] = \
-                get_input_data(instrument, archive_dir + night, obs, mask, skip_s1d=False,
-                               order_selection=order_selection)
+                get_input_data(instrument, night_dict[night], archive_dir + night_name, obs, mask, skip_s1d=False,
+                               order_selection=order_selection)   
 
             #""" Zero or negative values are identified, flagged and substituted with another value """
             #replacement = 0.01
@@ -226,7 +228,7 @@ def prepare_datasets(config_in):
             if 'n_orders' not in observations_A or 'n_pixels' not in observations_A:
                 observations_A['n_orders'] = observations_A[obs]['n_orders']
                 observations_A['n_pixels'] = observations_A[obs]['n_pixels']
-                calib_data_A = get_calib_data(instrument, archive_dir + night, obs,
+                calib_data_A = get_calib_data(instrument, night_dict[night], archive_dir + night, obs,
                                               order_selection=order_selection)
 
             """ Updating info on shared data """
@@ -249,7 +251,7 @@ def prepare_datasets(config_in):
             has_fiber_B = False
             try:
 
-                observations_B[obs], _ = get_input_data(instrument, archive_dir + night, obs, mask,
+                observations_B[obs], _ = get_input_data(instrument, night_dict[night], archive_dir + night, obs, mask,
                                                         fiber='B', order_selection=order_selection)
 
                 """ Negative values are just statistical noise around the null flux points,
@@ -271,8 +273,10 @@ def prepare_datasets(config_in):
                     observations_B[obs]['noise_floor'] = np.median(np.abs(
                         observations_B[obs]['e2ds'][observations_B[obs]['null']]))
                 else:
-                    observations_B[obs]['noise_floor'] = 1.
-                #observations_B[obs]['e2ds'][observations_B[obs]['null']] = replacement
+                    if observations_B[obs].get('absolute_flux', True):
+                        observations_B[obs]['noise_floor'] = 1.0000
+                    else:
+                        observations_B[obs]['noise_floor'] = 0.00001                #observations_B[obs]['e2ds'][observations_B[obs]['null']] = replacement
 
                 observations_B[obs]['e2ds_err'] = np.sqrt(np.abs(observations_B[obs]['e2ds'])) + observations_B[obs]['noise_floor']
 
@@ -280,7 +284,7 @@ def prepare_datasets(config_in):
                     observations_B['n_orders'] = observations_B[obs]['n_orders']
                     observations_B['n_pixels'] = observations_B[obs]['n_pixels']
 
-                    calib_data_B = get_calib_data(instrument, archive_dir + night, obs,
+                    calib_data_B = get_calib_data(instrument, night_dict[night], archive_dir + night, obs,
                                                   fiber='B', order_selection=order_selection)
                 has_fiber_B = True
             except:

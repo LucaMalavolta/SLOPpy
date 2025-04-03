@@ -71,7 +71,7 @@ def compute_interstellar_lines(config_in):
 
             """ for plotting purpose only"""
             processed[obs]['flux'] = input_data[obs]['e2ds'] / calib_data['blaze'] / input_data[obs]['step']
-            processed[obs]['flux_err'] = np.sqrt(input_data[obs]['e2ds']) / calib_data['blaze'] / input_data[obs][
+            processed[obs]['flux_err'] = input_data[obs]['e2ds_err'] / calib_data['blaze'] / input_data[obs][
                 'step']
 
         for line_name, line in interstellar_lines.items():
