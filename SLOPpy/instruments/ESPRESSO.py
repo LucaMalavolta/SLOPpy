@@ -62,7 +62,6 @@ def ESPRESSO_get_calib_data(archive, file_rad, night_dict, fiber='A', order_sele
         """ Only the orders with a match in fiber A are read in the first place, so we can safely rescale with respect
             to the number of the first order in the matched list """
 
-
     if properties['use_ESO_deblazed']:
         e2ds_fits_deblazed = fits.open(archive+'/'+file_rad+'_S2D_'+fiber+'.fits')
         blaze = np.ones_like(e2ds_fits_deblazed[1].data[properties['orders_regroup'], :])
@@ -283,7 +282,7 @@ def ESPRESSO_get_input_data(archive, file_rad, night_dict, fiber='A', skip_ccf=N
     input_dict['e2ds_err'] = e2ds_fits[2].data[properties['orders_regroup'], :][selected_orders, :]
 
     if properties['apply_ESO_telluric_correction']:
-        tell_fits = fits.open(archive+'/'+file_rad+'_S2D_TELL_CORR_'+fiber+'.fits')
+        tell_fits = fits.open(archive+'/'+file_rad+'_S2D_TELL_SPECTRUM_'+fiber+'.fits')
         tell_spectrum_selected = tell_fits[1].data[properties['orders_regroup'], :][selected_orders,:]
 
     tell_spectrum_selected[tell_spectrum_selected == 0] = 1.0
@@ -294,8 +293,6 @@ def ESPRESSO_get_input_data(archive, file_rad, night_dict, fiber='A', skip_ccf=N
     step_with_berv =  e2ds_fits[7].data[properties['orders_regroup'], :][selected_orders, :]
 
     input_dict['wave'], input_dict['step'] = shift_wavelength_to_rest(wave_with_berv, step_with_berv, input_dict['BERV'] )
-
-    input_dict['orders'] = len(selected_orders)
 
     input_dict['wave_size'] = e2ds_fits[1].header['NAXIS1']
 
