@@ -88,7 +88,7 @@ def prepare_datasets(config_in):
             night_dict[night])
 
         """ fix the potential problem of multiple observations taken during the same night"""
-        night_name = night_dict.get('night', night)
+        night_name = night_dict[night].get('night', night)
 
         lists_dictionary = {
             'observations': files_list,
@@ -113,7 +113,7 @@ def prepare_datasets(config_in):
 
         """ Retrieval on instrument characteristics """
         instrument = night_dict[night]['instrument']
-        mask = night_dict[night]['mask']
+        mask = night_dict[night].get('mask', 'undefined')
         archive_dir = instrument_dict[instrument]['data_archive']
         order_selection = instrument_dict[instrument]['orders']
         wavelength_rescaling = instrument_dict[instrument]['wavelength_rescaling']
@@ -228,7 +228,7 @@ def prepare_datasets(config_in):
             if 'n_orders' not in observations_A or 'n_pixels' not in observations_A:
                 observations_A['n_orders'] = observations_A[obs]['n_orders']
                 observations_A['n_pixels'] = observations_A[obs]['n_pixels']
-                calib_data_A = get_calib_data(instrument, night_dict[night], archive_dir + night, obs,
+                calib_data_A = get_calib_data(instrument, night_dict[night], archive_dir + night_name, obs,
                                               order_selection=order_selection)
 
             """ Updating info on shared data """
@@ -251,7 +251,7 @@ def prepare_datasets(config_in):
             has_fiber_B = False
             try:
 
-                observations_B[obs], _ = get_input_data(instrument, night_dict[night], archive_dir + night, obs, mask,
+                observations_B[obs], _ = get_input_data(instrument, night_dict[night], archive_dir + night_name, obs, mask,
                                                         fiber='B', order_selection=order_selection)
 
                 """ Negative values are just statistical noise around the null flux points,
@@ -284,7 +284,7 @@ def prepare_datasets(config_in):
                     observations_B['n_orders'] = observations_B[obs]['n_orders']
                     observations_B['n_pixels'] = observations_B[obs]['n_pixels']
 
-                    calib_data_B = get_calib_data(instrument, night_dict[night], archive_dir + night, obs,
+                    calib_data_B = get_calib_data(instrument, night_dict[night], archive_dir + night_name, obs,
                                                   fiber='B', order_selection=order_selection)
                 has_fiber_B = True
             except:

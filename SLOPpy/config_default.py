@@ -50,5 +50,10 @@ copy_from_instrument = [
     'telluric',
     'mask',
     'use_rv_from_ccf',
-    'use_analytical_rvs'
+    'use_analytical_rvs',
+    'telescope',
+    'spectral_selection',
+    'apply_ESO_telluric_correction',
+    'use_ESO_sky_correction',
+    'use_ESO_deblazed'
 ]

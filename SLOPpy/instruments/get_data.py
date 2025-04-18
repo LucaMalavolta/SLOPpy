@@ -17,7 +17,7 @@ def get_calib_data(instrument, night_dict, archive, file_rad, fiber='A', order_s
     elif instrument in ['PEPSI', 'PEPSI_red', 'PEPSI_blue']:
         return PEPSI_get_calib_data(archive, file_rad, fiber=fiber, order_selection=order_selection)
     elif instrument in ['ESPRESSO', 'ESPRESSO_odd', 'ESPRESSO_even']:
-        return ESPRESSO_get_calib_data(archive, file_rad, fiber=fiber, order_selection=order_selection, night_dict=night_dict)
+        return ESPRESSO_get_calib_data(archive, file_rad, night_dict, fiber=fiber, order_selection=order_selection)
     else:
         raise ValueError("Instrument not supported")
 
@@ -31,6 +31,15 @@ def get_input_data(instrument, night_dict, archive, file_rad, mask, fiber='A', s
     elif instrument in ['PEPSI', 'PEPSI_red', 'PEPSI_blue']:
         return PEPSI_get_input_data(archive, file_rad, mask, fiber=fiber, skip_ccf=skip_ccf, skip_s1d=skip_s1d, order_selection=order_selection)
     elif instrument in ['ESPRESSO', 'ESPRESSO_odd', 'ESPRESSO_even']:
-        return ESPRESSO_get_input_data(archive, file_rad, mask, fiber=fiber, skip_ccf=skip_ccf, skip_s1d=skip_s1d, order_selection=order_selection, night_dict=night_dict)
+        return ESPRESSO_get_input_data(archive, file_rad, night_dict, fiber=fiber, skip_ccf=skip_ccf, skip_s1d=skip_s1d, order_selection=order_selection)
+    
+        """ Keywords in night:
+        telescope: UT1
+        spectral_selection: odd % even
+        apply_ESO_telluric_correction: True
+        use_ESO_sky_correction: True 
+        use_ESO_deblazed: True
+        """
+    
     else:
         raise ValueError("Instrument not supported")

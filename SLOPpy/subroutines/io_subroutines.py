@@ -187,7 +187,10 @@ def pars_input(config_in):
         """ keywords are inherited from the instrument dictionary, when not explicitely specified"""
         for key in copy_from_instrument:
             if key not in config_in['nights'][night]:
-                 config_in['nights'][night][key] = config_in['instruments'][instrument][key]
+                try:
+                    config_in['nights'][night][key] = config_in['instruments'][instrument][key]
+                except KeyError:
+                    continue
 
         if 'refraction' not in config_in['nights'][night]:
             config_in['nights'][night]['refraction'] = config_in['instruments'][instrument]['refraction'].copy()
