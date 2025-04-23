@@ -282,8 +282,17 @@ def ESPRESSO_get_input_data(archive, file_rad, night_dict, fiber='A', skip_ccf=N
     input_dict['e2ds_err'] = e2ds_fits[2].data[properties['orders_regroup'], :][selected_orders, :]
 
     if properties['apply_ESO_telluric_correction']:
-        tell_fits = fits.open(archive+'/'+file_rad+'_S2D_TELL_SPECTRUM_'+fiber+'.fits')
-        tell_spectrum_selected = tell_fits[1].data[properties['orders_regroup'], :][selected_orders,:]
+        ssub_fits = fits.open(archive+'/'+file_rad+'_S2D_SKYSUB_'+fiber+'.fits')
+        tell_fits = fits.open(archive+'/'+file_rad+'_S2D_TELL_CORR_'+fiber+'.fits')
+        ssub_spec = ssub_fits[1].data[properties['orders_regroup'], :][selected_orders, :]
+        tell_spec = tell_fits[1].data[properties['orders_regroup'], :][selected_orders, :]
+
+        ssub_spec[ssub_spec == 0] = 1.0
+        tell_spec[tell_spec == 0] = 1.0
+
+        tell_spectrum_selected = tell_spec / ssub_spec
+        ssub_fits.close()
+        tell_fits.close()
 
     tell_spectrum_selected[tell_spectrum_selected == 0] = 1.0
     input_dict['e2ds'] /= tell_spectrum_selected
@@ -431,21 +440,27 @@ def ESPRESSO_get_instrument_keywords(night_dict):
             140, 142, 144, 146, 148, 150, 152, 154, 156, 158,
             160, 162, 164, 166, 168]
 
-    properties['use_ESO_telluric_correction'] = night_dict.get('use_ESO_telluric_correction', False)
+    properties['use_ESO_telluric_correction'] = night_dict.get('use_ESO_telluric_correction', True)
     properties['use_ESO_sky_correction'] = night_dict.get('use_ESO_sky_correction', True)
     properties['use_ESO_deblazed'] = night_dict.get('use_ESO_deblazed', True)
-    properties['apply_ESO_telluric_correction'] = night_dict.get('apply_ESO_telluric_correction', True)
+    properties['apply_ESO_telluric_correction'] = night_dict.get('apply_ESO_telluric_correction', False)
 
-
-    if properties['use_ESO_telluric_correction'] and properties['use_ESO_sky_correction']:
-        print('*** WARNING: you can choose only between pre-applied telluric correction or pre-applied sky correction.' \
-              '             a DAS file with both of them applied is not available.' \
+    if properties['apply_ESO_telluric_correction'] and properties['use_ESO_sky_correction']:
+        print('*** WARNING: DAS telluric correction is performed on spectra with pre-applied sky correction.' \
               '             Please check the DAS documentation.')
-        print('    You can use the keyword apply_ESO_telluric_correction to apply immediately the ESO telluric correction')
+        print('    You shoudl use the keyword use_ESO_telluric_correction to use directly ESO telluric correction')
+        quit()
+
+    if properties['use_ESO_telluric_correction'] and not properties['use_ESO_sky_correction']:
+        print('*** WARNING: pre-applied telluric correction comes with pre-applied sky correction.' \
+              '             a DAS file with only telluric correction is not available.' \
+              '             Please check the DAS documentation.')
+        print('    You can use the keyword apply_ESO_telluric_correction to apply the ESO telluric correction '\ 
+              '    without using the pre-applied sky correction.')
         quit()
 
     if properties['use_ESO_sky_correction'] and not properties['use_ESO_deblazed']:
-        print('*** WARNING: pre-applied sky correction is available only on deblazed.' \
+        print('*** WARNING: pre-applied sky correction is available only on deblazed files.' \
               '             As the computation of the relative efficiency between the two fibers is not yet implemented,' \
               '             at the moment is not possible to perform sky correction through the usual SLOPpy task.')
 
