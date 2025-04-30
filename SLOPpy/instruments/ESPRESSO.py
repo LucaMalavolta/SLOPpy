@@ -294,9 +294,9 @@ def ESPRESSO_get_input_data(archive, file_rad, night_dict, fiber='A', skip_ccf=N
         ssub_fits.close()
         tell_fits.close()
 
-    tell_spectrum_selected[tell_spectrum_selected == 0] = 1.0
-    input_dict['e2ds'] /= tell_spectrum_selected
-    input_dict['e2ds_err'] /= tell_spectrum_selected
+        tell_spectrum_selected[tell_spectrum_selected == 0] = 1.0
+        input_dict['e2ds'] /= tell_spectrum_selected
+        input_dict['e2ds_err'] /= tell_spectrum_selected
 
     wave_with_berv =  e2ds_fits[5].data[properties['orders_regroup'], :][selected_orders, :]
     step_with_berv =  e2ds_fits[7].data[properties['orders_regroup'], :][selected_orders, :]
