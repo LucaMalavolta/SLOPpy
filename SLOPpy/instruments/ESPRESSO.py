@@ -104,10 +104,10 @@ def ESPRESSO_get_input_data(archive, file_rad, night_dict, fiber='A', skip_ccf=N
     selected_orders = ESPRESSO_give_back_selected_orders(properties, fiber, order_selection)
 
     if properties['use_ESO_deblazed']:
-        if properties['use_ESO_sky_correction']:
+        if properties['use_ESO_telluric_correction']:
+            e2ds_fits = fits.open(archive+'/'+file_rad+'_S2D_TELL_CORR_'+fiber+'.fits')
+        elif properties['use_ESO_sky_correction']:
             e2ds_fits = fits.open(archive+'/'+file_rad+'_S2D_SKYSUB_'+fiber+'.fits')
-        elif properties['use_ESO_telluric_correction']:
-            e2ds_fits = fits.open(archive+'/'+file_rad+'_S2D_TELLURIC_'+fiber+'.fits')
         else: 
             e2ds_fits = fits.open(archive+'/'+file_rad+'_S2D_'+fiber+'.fits')
     else:    
@@ -455,7 +455,7 @@ def ESPRESSO_get_instrument_keywords(night_dict):
         print('*** WARNING: pre-applied telluric correction comes with pre-applied sky correction.' \
               '             a DAS file with only telluric correction is not available.' \
               '             Please check the DAS documentation.')
-        print('    You can use the keyword apply_ESO_telluric_correction to apply the ESO telluric correction '\ 
+        print('    You can use the keyword apply_ESO_telluric_correction to apply the ESO telluric correction '\
               '    without using the pre-applied sky correction.')
         quit()
 
