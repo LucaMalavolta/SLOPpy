@@ -63,14 +63,18 @@ def ESPRESSO_get_calib_data(archive, file_rad, night_dict, fiber='A', order_sele
             to the number of the first order in the matched list """
 
     if properties['use_ESO_deblazed']:
-        e2ds_fits_deblazed = fits.open(archive+'/'+file_rad+'_S2D_'+fiber+'.fits')
-        blaze = np.ones_like(e2ds_fits_deblazed[1].data[properties['orders_regroup'], :])
-        e2ds_fits_deblazed.close()
+        if properties['use_ESO_telluric_correction']:
+            e2ds_fits = fits.open(archive+'/'+file_rad+'_S2D_TELL_CORR_'+fiber+'.fits')
+        elif properties['use_ESO_sky_correction']:
+            e2ds_fits = fits.open(archive+'/'+file_rad+'_S2D_SKYSUB_'+fiber+'.fits')
+        else:
+            e2ds_fits = fits.open(archive+'/'+file_rad+'_S2D_'+fiber+'.fits')
+
+        blaze = np.ones_like(e2ds_fits[1].data[properties['orders_regroup'], :])
+        e2ds_fits.close()
     else:
-    
         e2ds_fits_deblazed = fits.open(archive+'/'+file_rad+'_S2D_'+fiber+'.fits')
         e2ds_fits= fits.open(archive+'/'+file_rad+'_S2D_BLAZE_'+fiber+'.fits')
-
 
         blaze_full = e2ds_fits[1].data / e2ds_fits_deblazed[1].data
         blaze = blaze_full[properties['orders_regroup'], :]
@@ -99,7 +103,7 @@ def ESPRESSO_get_input_data(archive, file_rad, night_dict, fiber='A', skip_ccf=N
     input_dict = {'header':{}}
     input_s1d = {'header':{}}
 
-    keywords, properties = ESPRESSO_get_instrument_keywords(night_dict)    
+    keywords, properties = ESPRESSO_get_instrument_keywords(night_dict)
 
     selected_orders = ESPRESSO_give_back_selected_orders(properties, fiber, order_selection)
 
@@ -108,9 +112,9 @@ def ESPRESSO_get_input_data(archive, file_rad, night_dict, fiber='A', skip_ccf=N
             e2ds_fits = fits.open(archive+'/'+file_rad+'_S2D_TELL_CORR_'+fiber+'.fits')
         elif properties['use_ESO_sky_correction']:
             e2ds_fits = fits.open(archive+'/'+file_rad+'_S2D_SKYSUB_'+fiber+'.fits')
-        else: 
+        else:
             e2ds_fits = fits.open(archive+'/'+file_rad+'_S2D_'+fiber+'.fits')
-    else:    
+    else:
         if properties['use_ESO_telluric_correction']:
             e2ds_fits = fits.open(archive+'/'+file_rad+'_S2D_BLAZE_TELL_CORR_'+fiber+'.fits')
         else:
@@ -126,10 +130,10 @@ def ESPRESSO_get_input_data(archive, file_rad, night_dict, fiber='A', skip_ccf=N
         return
 
     if not skip_s1d:
-        if properties['use_ESO_sky_correction']:
-            s1d_fits = fits.open(archive + '/' + file_rad + '_S1D_SKYSUB_'+fiber+'.fits')
-        elif properties['use_ESO_telluric_correction']:
+        if properties['use_ESO_telluric_correction']:
             s1d_fits = fits.open(archive + '/' + file_rad + '_S1D_TELL_CORR_'+fiber+'.fits')
+        elif properties['use_ESO_sky_correction']:
+            s1d_fits = fits.open(archive + '/' + file_rad + '_S1D_SKYSUB_'+fiber+'.fits')
         else:
             s1d_fits = fits.open(archive + '/' + file_rad + '_S1D_'+fiber+'.fits')
 
@@ -151,10 +155,10 @@ def ESPRESSO_get_input_data(archive, file_rad, night_dict, fiber='A', skip_ccf=N
         s1d_fits.close()
 
     if not skip_ccf:
-        if properties['use_ESO_sky_correction']:
-            ccf_fits = fits.open(archive+'/'+file_rad+'_CCF_SKYSUB_'+fiber+'.fits')
-        elif properties['use_ESO_telluric_correction']:
+        if properties['use_ESO_telluric_correction']:
             ccf_fits = fits.open(archive+'/'+file_rad+'_CCF_TELL_CORR_'+fiber+'.fits')
+        elif properties['use_ESO_sky_correction']:
+            ccf_fits = fits.open(archive+'/'+file_rad+'_CCF_SKYSUB_'+fiber+'.fits')
         else:
             ccf_fits = fits.open(archive+'/'+file_rad+'_CCF_'+fiber+'.fits')
         input_dict['RVC'] = ccf_fits[0].header[keywords['header_rvc']]
@@ -426,7 +430,7 @@ def ESPRESSO_get_instrument_keywords(night_dict):
             101, 103, 105, 107, 109, 111, 113, 115, 117, 119,
             121, 123, 125, 127, 129, 131, 133, 135, 137, 139,
             141, 143, 145, 147, 149, 151, 153, 155, 157, 159,
-            161, 163, 165, 167, 169] 
+            161, 163, 165, 167, 169]
 
     if night_dict['spectral_selection'] == 'even':
         properties['orders_regroup'] = [
